@@ -1,8 +1,7 @@
-with STM32.Device;     use STM32.Device;
+with HAL;          use HAL;
+with STM32.Device; use STM32.Device;
 
-with Serial_IO;        use Serial_IO;
-
-with MBus;             use MBus;
+with MBus;         use MBus;
 
 package body Serial_IO.Blocking is
 
