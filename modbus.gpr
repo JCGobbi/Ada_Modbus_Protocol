@@ -1,6 +1,6 @@
 with "Ada_Drivers_Library/ada_drivers_library.gpr";
 
-project Modbus extends "../Ada_Drivers_Library/repo/examples/shared/common/common.gpr" is
+project Modbus extends "Ada_Drivers_Library/repo/examples/shared/common/common.gpr" is
 
    for Languages use ("Ada");
    for Target use Ada_Drivers_Library'Target;
