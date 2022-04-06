@@ -4,7 +4,7 @@ package body Message_Buffers is
    -- Get_Content --
    -----------------
 
-   function Get_Content (This : Message) return Block_8 is
+   function Get_Content (This : Message) return UInt8_Array is
    begin
       return This.Content (1 .. This.Length);
    end Get_Content;
@@ -50,7 +50,7 @@ package body Message_Buffers is
    -- Set_Content --
    -----------------
 
-   procedure Set_Content (This : in out Message;  To : Block_8) is
+   procedure Set_Content (This : in out Message;  To : UInt8_Array) is
    begin
       This.Content (1 .. To'Length) := To;
       This.Length := To'Length;

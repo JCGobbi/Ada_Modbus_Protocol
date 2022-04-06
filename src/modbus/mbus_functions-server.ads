@@ -7,12 +7,12 @@ package MBus_Functions.Server is
    procedure MBus_Read_Discrete_Inputs
      (Address       : MBus_Server_Address;
       Byte_Count    : UInt16;
-      Input_Status  : Block_8);
+      Input_Status  : UInt8_Array);
 
    procedure MBus_Read_Coils
      (Address       : MBus_Server_Address;
       Byte_Count    : UInt8;
-      Coil_Status   : Block_8);
+      Coil_Status   : UInt8_Array);
 
    procedure MBus_Write_Single_Coil
      (Address        : MBus_Server_Address;
@@ -31,12 +31,12 @@ package MBus_Functions.Server is
    procedure MBus_Read_Holding_Registers
      (Address        : MBus_Server_Address;
       Byte_Count     : UInt8;
-      Register_Value : Block_16);
+      Register_Value : UInt16_Array);
 
    procedure MBus_Read_Input_Registers
      (Address         : MBus_Server_Address;
       Byte_Count      : UInt8;
-      Input_Registers : Block_16);
+      Input_Registers : UInt16_Array);
 
    procedure MBus_Write_Single_Register
      (Address          : MBus_Server_Address;
@@ -51,7 +51,7 @@ package MBus_Functions.Server is
    procedure MBus_ReadWrite_Multiple_Registers
      (Address              : MBus_Server_Address;
       Byte_Count           : UInt8;
-      Read_Registers_Value : Block_16);
+      Read_Registers_Value : UInt16_Array);
 
    --------------------------------
    -- MODBUS data exception code --

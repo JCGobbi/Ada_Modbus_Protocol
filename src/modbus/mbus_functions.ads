@@ -1,5 +1,4 @@
 with HAL;                  use HAL;
-with STM32.CRC;            use STM32.CRC;
 with STM32.USARTs;         use STM32.USARTs;
 
 with Peripherals_Blocking; use Peripherals_Blocking;
@@ -56,21 +55,21 @@ package MBus_Functions is
    procedure Write_Frame (Msg            : in out Message;
                           Server_Address : MBus_Server_Address;
                           Function_Code  : UInt8;
-                          Data_Chain     : Block_8);
+                          Data_Chain     : UInt8_Array);
    
    procedure WriteSend_Frame (Msg            : in out Message;
                               Server_Address : MBus_Server_Address;
                               Function_Code  : UInt8;
-                              Data_Chain     : Block_8);
+                              Data_Chain     : UInt8_Array);
    
    procedure Read_Frame (Msg           : in out Message;
                          Server_Address : MBus_Server_Address;
                          Function_Code : UInt8;
-                         Data_Chain    : in out Block_8);
+                         Data_Chain    : in out UInt8_Array);
 
    procedure ReadReceive_Frame (Msg            : in out Message;
                                 Server_Address : MBus_Server_Address;
                                 Function_Code  : UInt8;
-                                Data_Chain     : in out Block_8);
+                                Data_Chain     : in out UInt8_Array);
 
 end MBus_Functions;

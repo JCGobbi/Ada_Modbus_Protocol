@@ -15,7 +15,6 @@ with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
 --  an exception is propagated. We need it in the executable, therefore it
 --  must be somewhere in the closure of the context clauses.
 with HAL;                  use HAL;
-with STM32.CRC;            use STM32.CRC;
 with STM32.USARTs;         use STM32.USARTs;
 
 with Peripherals_Blocking; use Peripherals_Blocking;
@@ -40,7 +39,7 @@ procedure Demo_String_Blocking is
      
    procedure Send (This : String) is
       Pos : UInt8;
-      CharPos : Block_8 (1 .. This'Length);
+      CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
          Pos := Character'Pos (This(i));
@@ -88,7 +87,7 @@ begin
          Send ("no characters." & ASCII.CR & ASCII.LF);
       else
          declare
-            IntPos : Block_8 (1 .. Get_Length (Incoming));
+            IntPos : UInt8_Array (1 .. Get_Length (Incoming));
             -- The IntPos array has dynamic length, so we need to declare its size
             -- inside the loop.
          begin

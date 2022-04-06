@@ -4,7 +4,6 @@ with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
 --  must be somewhere in the closure of the context clauses.
 
 with HAL;                   use HAL;
-with STM32.CRC;             use STM32.CRC;
 with STM32.USARTS;          use STM32.USARTS;
 
 with Peripherals_Blocking;  use Peripherals_Blocking;
@@ -45,7 +44,7 @@ procedure Demo_Term_Blocking is
      
    procedure Send (This : String) is
       Pos : UInt8;
-      CharPos : Block_8 (1 .. This'Length);
+      CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
          Pos := Character'Pos (This(i));
@@ -139,11 +138,12 @@ begin
             declare
                PosAddr  : constant UInt8 := Get_ASCII_Pos (16#07#); -- character 7
                PosCnt   : constant UInt16 := 16#4243#; -- characters B and C
-               PosInput : constant Block_8 := (Get_ASCII_Pos (16#01#), Get_ASCII_Pos (16#0F#),
-                                               Get_ASCII_Pos (16#02#), Get_ASCII_Pos (16#03#),
-                                               Get_ASCII_Pos (16#04#), Get_ASCII_Pos (16#07#),
-                                               Get_ASCII_Pos (16#08#), Get_ASCII_Pos (16#00#),
-                                               16#0A#, 16#0D#); -- characters LF and CR
+               PosInput : constant UInt8_Array :=
+                 (Get_ASCII_Pos (16#01#), Get_ASCII_Pos (16#0F#),
+                  Get_ASCII_Pos (16#02#), Get_ASCII_Pos (16#03#),
+                  Get_ASCII_Pos (16#04#), Get_ASCII_Pos (16#07#),
+                  Get_ASCII_Pos (16#08#), Get_ASCII_Pos (16#00#),
+                  16#0A#, 16#0D#); -- characters LF and CR
             begin
                MBus_Read_Discrete_Inputs (Address       => PosAddr,
                                           Byte_Count    => PosCnt,
@@ -171,7 +171,7 @@ begin
             declare
                PosAddr  : constant UInt8 := 16#07#;
                PosByte  : constant UInt16 := 16#0B0C#; -- characters B and C
-               PosInput : constant Block_8 := (16#1F#, 16#23#, 16#47#, 16#80#);
+               PosInput : constant UInt8_Array := (16#1F#, 16#23#, 16#47#, 16#80#);
             begin
                MBus_Read_Discrete_Inputs (Address      => PosAddr,
                                           Byte_Count   => PosByte,

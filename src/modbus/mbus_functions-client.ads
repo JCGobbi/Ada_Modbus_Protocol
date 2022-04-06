@@ -24,7 +24,7 @@ package MBus_Functions.Client is
       Starting_Address    : UInt16;
       Quantity_of_Outputs : UInt16;
       Byte_Count          : UInt8;
-      Output_Value        : Block_8);
+      Output_Value        : UInt8_Array);
 
    -------------------------------------
    -- MODBUS 16 bits access functions --
@@ -50,7 +50,7 @@ package MBus_Functions.Client is
       Starting_Address      : UInt16;
       Quantity_of_Registers : UInt16;
       Byte_Count            : UInt8;
-      Registers_Value       : Block_16);
+      Registers_Value       : UInt16_Array);
 
    procedure MBus_ReadWrite_Multiple_Registers
      (Address                : MBus_Server_Address;
@@ -59,6 +59,6 @@ package MBus_Functions.Client is
       Write_Starting_Address : UInt16;
       Quantity_to_Write      : UInt16;
       Write_Byte_Count       : UInt8;
-      Write_Registers_Value  : Block_16);
+      Write_Registers_Value  : UInt16_Array);
 
 end MBus_Functions.Client;

@@ -72,7 +72,7 @@ package body MBus_Functions is
    procedure Write_Frame (Msg            : in out Message;
                           Server_Address : MBus_Server_Address;
                           Function_Code  : UInt8;
-                          Data_Chain     : Block_8)
+                          Data_Chain     : UInt8_Array)
    is
       Check : UInt16;
    begin
@@ -119,7 +119,7 @@ package body MBus_Functions is
    procedure WriteSend_Frame (Msg            : in out Message;
                               Server_Address : MBus_Server_Address;
                               Function_Code  : UInt8;
-                              Data_Chain     : Block_8)
+                              Data_Chain     : UInt8_Array)
    is
       Check : UInt16;
    begin
@@ -170,7 +170,7 @@ package body MBus_Functions is
    procedure Read_Frame (Msg            : in out Message;
                          Server_Address : MBus_Server_Address;
                          Function_Code  : UInt8;
-                         Data_Chain     : in out Block_8)
+                         Data_Chain     : in out UInt8_Array)
    is
    begin
       Await_Reception_Complete (Msg); -- modbus incoming buffer
@@ -221,7 +221,7 @@ package body MBus_Functions is
    procedure ReadReceive_Frame (Msg            : in out Message;
                                 Server_Address : MBus_Server_Address;
                                 Function_Code  : UInt8;
-                                Data_Chain     : in out Block_8)
+                                Data_Chain     : in out UInt8_Array)
    is
    begin
       -- Before doing this, we must get the modbus frame from the serial channel

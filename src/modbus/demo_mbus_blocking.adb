@@ -7,7 +7,6 @@ with MBus_Task; pragma Unreferenced (MBus_Task);
 
 with Ada.Real_Time;         use Ada.Real_Time;
 with HAL;                   use HAL;
-with STM32.CRC;             use STM32.CRC;
 with STM32.USARTS;          use STM32.USARTS;
 
 with Peripherals_Blocking;  use Peripherals_Blocking;
@@ -62,7 +61,7 @@ procedure Demo_MBus_Blocking is
      
    procedure Send (This : String) is
       Pos : UInt8;
-      CharPos : Block_8 (1 .. This'Length);
+      CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
          Pos := Character'Pos (This(i));
@@ -167,8 +166,8 @@ begin
          declare
             PosAddr  : constant UInt8 := 16#0A#;
             PosCnt   : constant UInt16 := 16#0008#;
-            PosInput : constant Block_8 := (16#34#, 16#AF#, 16#C2#, 16#93#,
-                                            16#54#, 16#67#, 16#B8#, 16#E0#);
+            PosInput : constant UInt8_Array := (16#34#, 16#AF#, 16#C2#, 16#93#,
+                                                16#54#, 16#67#, 16#B8#, 16#E0#);
          begin
             MBus_Read_Discrete_Inputs (Address       => PosAddr,
                                        Byte_Count    => PosCnt,
@@ -239,7 +238,7 @@ begin
                   & ASCII.CR & ASCII.LF);
 
             declare
-               Chain : Block_8 (1 .. Get_Length (Incoming));
+               Chain : UInt8_Array (1 .. Get_Length (Incoming));
             begin
                Read_Frame (Msg            => Incoming,
                            Server_Address => Server_Address,

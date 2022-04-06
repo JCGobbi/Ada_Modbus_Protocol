@@ -16,7 +16,7 @@ package body MBus_Functions.Client is
       Quantity_of_Inputs : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Read_Discrete_Inputs;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -40,7 +40,7 @@ package body MBus_Functions.Client is
       Quantity_of_Coils : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Read_Coils;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -64,7 +64,7 @@ package body MBus_Functions.Client is
       Output_Value   : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Write_Single_Coil;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Output_Address);
       DBuffer(2) := Get_Low_Byte (Output_Address);
@@ -87,10 +87,10 @@ package body MBus_Functions.Client is
       Starting_Address    : UInt16;
       Quantity_of_Outputs : UInt16;
       Byte_Count          : UInt8;
-      Output_Value        : Block_8)
+      Output_Value        : UInt8_Array)
    is
       Function_Code : constant MBus_Normal_Function_Code := Write_Multiple_Coils;
-      DBuffer : Block_8 (1 .. Output_Value'Length + 5);
+      DBuffer : UInt8_Array (1 .. Output_Value'Length + 5);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -122,7 +122,7 @@ package body MBus_Functions.Client is
       Quantity_of_Registers : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Read_Holding_Registers;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte(Starting_Address);
       DBuffer(2) := Get_Low_Byte(Starting_Address);
@@ -146,7 +146,7 @@ package body MBus_Functions.Client is
       Quantity_of_Input_Registers : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Read_Input_Registers;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte(Starting_Address);
       DBuffer(2) := Get_Low_Byte(Starting_Address);
@@ -170,7 +170,7 @@ package body MBus_Functions.Client is
       Register_Value   : UInt16)
    is
       Function_Code : constant MBus_Normal_Function_Code := Write_Single_Register;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Register_Address);
       DBuffer(2) := Get_Low_Byte (Register_Address);
@@ -193,10 +193,10 @@ package body MBus_Functions.Client is
       Starting_Address      : UInt16;
       Quantity_of_Registers : UInt16;
       Byte_Count            : UInt8;
-      Registers_Value       : Block_16)
+      Registers_Value       : UInt16_Array)
    is
       Function_Code : constant MBus_Normal_Function_Code := Write_Multiple_Registers;
-      DBuffer : Block_8 (1 .. Registers_Value'Length * 2 + 5);
+      DBuffer : UInt8_Array (1 .. Registers_Value'Length * 2 + 5);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -226,10 +226,10 @@ package body MBus_Functions.Client is
       Write_Starting_Address : UInt16;
       Quantity_to_Write      : UInt16;
       Write_Byte_Count       : UInt8;
-      Write_Registers_Value  : Block_16)
+      Write_Registers_Value  : UInt16_Array)
    is
       Function_Code : constant MBus_Normal_Function_Code := ReadWrite_Multiple_Registers;
-      DBuffer : Block_8 (1 .. Write_Registers_Value'Length * 2 + 9);
+      DBuffer : UInt8_Array (1 .. Write_Registers_Value'Length * 2 + 9);
    begin
       DBuffer(1) := Get_High_Byte (Read_Starting_Address);
       DBuffer(2) := Get_Low_Byte (Read_Starting_Address);

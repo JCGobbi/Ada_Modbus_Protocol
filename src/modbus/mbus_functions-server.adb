@@ -13,10 +13,10 @@ package body MBus_Functions.Server is
    procedure MBus_Read_Discrete_Inputs
      (Address       : MBus_Server_Address;
       Byte_Count    : UInt16;
-      Input_Status  : Block_8)
+      Input_Status  : UInt8_Array)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Read_Discrete_Inputs;
-      DBuffer : Block_8 (1 .. Input_Status'Length + 2);
+      DBuffer : UInt8_Array (1 .. Input_Status'Length + 2);
    begin
       DBuffer(1) := Get_High_Byte (Byte_Count);
       DBuffer(2) := Get_Low_Byte (Byte_Count);
@@ -38,10 +38,10 @@ package body MBus_Functions.Server is
    procedure MBus_Read_Coils
      (Address       : MBus_Server_Address;
       Byte_Count    : UInt8;
-      Coil_Status   : Block_8)
+      Coil_Status   : UInt8_Array)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Read_Coils;
-      DBuffer : Block_8 (1 .. Coil_Status'Length + 1);
+      DBuffer : UInt8_Array (1 .. Coil_Status'Length + 1);
    begin
       DBuffer(1) := Byte_Count;
       for i in 1 .. Coil_Status'Length loop
@@ -65,7 +65,7 @@ package body MBus_Functions.Server is
       Output_Value   : UInt16)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Write_Single_Coil;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Output_Address);
       DBuffer(2) := Get_Low_Byte (Output_Address);
@@ -89,7 +89,7 @@ package body MBus_Functions.Server is
       Quantity_of_Outputs : UInt16)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Write_Multiple_Coils;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -114,10 +114,10 @@ package body MBus_Functions.Server is
    procedure MBus_Read_Holding_Registers
      (Address        : MBus_Server_Address;
       Byte_Count     : UInt8;
-      Register_Value : Block_16)
+      Register_Value : UInt16_Array)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Read_Holding_Registers;
-      DBuffer : Block_8 (1 .. (Register_Value'Length * 2) + 1);
+      DBuffer : UInt8_Array (1 .. (Register_Value'Length * 2) + 1);
    begin
       DBuffer(1) := Byte_Count;
       for i in 1 .. Register_Value'Length loop
@@ -139,10 +139,10 @@ package body MBus_Functions.Server is
    procedure MBus_Read_Input_Registers
      (Address         : MBus_Server_Address;
       Byte_Count      : UInt8;
-      Input_Registers : Block_16)
+      Input_Registers : UInt16_Array)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Read_Input_Registers;
-      DBuffer : Block_8 (1 .. (Input_Registers'Length * 2) + 1);
+      DBuffer : UInt8_Array (1 .. (Input_Registers'Length * 2) + 1);
    begin
       DBuffer(1) := Byte_Count;
       for i in 1 .. Input_Registers'Length loop
@@ -167,7 +167,7 @@ package body MBus_Functions.Server is
       Register_Value   : UInt16)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Write_Single_Register;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Register_Address);
       DBuffer(2) := Get_Low_Byte (Register_Address);
@@ -191,7 +191,7 @@ package body MBus_Functions.Server is
       Quantity_of_Registers : UInt16)
    is
       Normal_Function : constant MBus_Normal_Function_Code := Write_Multiple_Registers;
-      DBuffer : Block_8 (1 .. 4);
+      DBuffer : UInt8_Array (1 .. 4);
    begin
       DBuffer(1) := Get_High_Byte (Starting_Address);
       DBuffer(2) := Get_Low_Byte (Starting_Address);
@@ -212,10 +212,10 @@ package body MBus_Functions.Server is
    procedure MBus_ReadWrite_Multiple_Registers
      (Address              : MBus_Server_Address;
       Byte_Count           : UInt8;
-      Read_Registers_Value : Block_16)
+      Read_Registers_Value : UInt16_Array)
    is
       Normal_Function : constant MBus_Normal_Function_Code := ReadWrite_Multiple_Registers;
-      DBuffer : Block_8 (1 .. (Read_Registers_Value'Length * 2) + 1);
+      DBuffer : UInt8_Array (1 .. (Read_Registers_Value'Length * 2) + 1);
    begin
       DBuffer(1) := Byte_Count;
       for i in 1 .. Read_Registers_Value'Length loop
@@ -245,7 +245,7 @@ package body MBus_Functions.Server is
    is
       Exception_Function_Code : constant MBus_Exception_Function_Code
                               := Normal_Function + MBus_Exception_Code;
-      DBuffer : Block_8 (1 .. 1);
+      DBuffer : UInt8_Array (1 .. 1);
    begin
       DBuffer(1) := Data_Exception_Code;
       Write_Frame (Msg            => Outgoing,

@@ -1,5 +1,4 @@
 with HAL;                          use HAL;
-with STM32.CRC;                    use STM32.CRC;
 with Serial_IO;                    use Serial_IO;
 with Ada.Synchronous_Task_Control; use Ada.Synchronous_Task_Control;
 
@@ -10,7 +9,7 @@ package Message_Buffers is
 
    type Message (Physical_Size : Positive) is tagged limited private;
 
-   function Get_Content (This : Message) return Block_8 with Inline;
+   function Get_Content (This : Message) return UInt8_Array with Inline;
 
    function Get_Length (This : Message) return Natural with Inline;
 
@@ -27,7 +26,7 @@ package Message_Buffers is
      Post => Get_Content_At (This, Get_Length (This)) = Value,
      Inline;
 
-   procedure Set_Content (This : in out Message;  To : Block_8) with
+   procedure Set_Content (This : in out Message;  To : UInt8_Array) with
      Pre  => To'Length <= This.Physical_Size,
      Post => Get_Length (This) = To'Length and Get_Content (This) = To,
      Inline;
@@ -93,7 +92,7 @@ package Message_Buffers is
 private
 
    type Message (Physical_Size : Positive) is tagged limited record
-      Content               : Block_8 (1 .. Physical_Size);
+      Content               : UInt8_Array (1 .. Physical_Size);
       Length                : Natural := 0;
       Reception_Complete    : Suspension_Object;
       Transmission_Complete : Suspension_Object;
