@@ -4,43 +4,46 @@ package body MBus is
    -- MODBUS RTU Implementation --
    -------------------------------
 
-   -- The implementation of RTU reception driver may imply the management of a
-   -- lot of interruptions due to the t1.5 and t3.5 timers. With high
-   -- communication baud rates, this leads to a heavy CPU load. Consequently
-   -- these two timers must be strictly respected when the baud rate is equal
-   -- or lower than 19200 Bps.
+   --  The implementation of RTU reception driver may imply the management of a
+   --  lot of interruptions due to the t1.5 and t3.5 timers. With high
+   --  communication baud rates, this leads to a heavy CPU load. Consequently
+   --  these two timers must be strictly respected when the baud rate is equal
+   --  or lower than 19200 Bps.
 
-   -- For baud rates greater than 19200 Bps, fixed values for the 2 timers
-   -- should be used: it is recommended to use a value of 750µs for the
-   -- inter-character time-out (t1.5) and a value of 1.750ms for inter-frame
-   -- delay (t3.5). Both values are calculated at 22000 Bps.
+   --  For baud rates greater than 19200 Bps, fixed values for the 2 timers
+   --  should be used: it is recommended to use a value of 750µs for the
+   --  inter-character time-out (t1.5) and a value of 1.750ms for inter-frame
+   --  delay (t3.5). Both values are calculated at 22000 Bps.
 
-   -- Standard baud rates in bps are: 300, 600, 1200, 2400, 4800, 9600, 14400,
-   -- 19200, 38400, 57600, 115200, 230400, 460800.
+   --  Standard baud rates in bps are: 300, 600, 1200, 2400, 4800, 9600, 14400,
+   --  19200, 38400, 57600, 115200, 230400, 460800.
 
-   -- RTU protocol demands 11 bits per character.
+   --  RTU protocol demands 11 bits per character.
 
-   -- Max inter-character time between character at 9600 Bps is:
-   -- 1.5 * 11 bits per character / 9600 Bps = 1.71875 ms.
+   --  Max inter-character time between character at 9600 Bps is:
+   --  1.5 * 11 bits per character / 9600 Bps = 1.71875 ms.
 
-   -- Min inter-frame time between frames at 9600 Bps is:
-   -- 3.5 * 11 bits per character / 9600 Bps = 4.0104 ms.
+   --  Min inter-frame time between frames at 9600 Bps is:
+   --  3.5 * 11 bits per character / 9600 Bps = 4.0104 ms.
 
    ----------------
    -- Inter_Time --
    ----------------
 
-   -- Inter_Char is the number of characters in decimal parts.
-   -- Maximum inter-character time is 1.5 char time, so Inter_Char is 15.
-   -- Minimum inter-frame time is 3.5 char time, so Inter_Char is 35.
-   function Inter_Time (Bps : Baud_Rates; Inter_Char : Natural) return Time_Span is
+   --  Inter_Char is the number of characters in decimal parts.
+   --  Maximum inter-character time is 1.5 char time, so Inter_Char is 15.
+   --  Minimum inter-frame time is 3.5 char time, so Inter_Char is 35.
+   function Inter_Time (Bps : Baud_Rates;
+                        Inter_Char : Natural) return Time_Span
+   is
    begin
       if Bps <= 19_200 then
-         return Microseconds((10**5 * Inter_Char * 11) / Integer(Bps)); -- time in microseconds
+         return Microseconds ((10**5 * Inter_Char * 11) / Integer (Bps));
       else
-         -- With bps > 19200, fixed time of 750 us for inter-character with Inter_Char = 15,
-         -- and fixed time of 1750 us for inter-frame with Inter_Char = 35.
-         return Microseconds((10**5 * Inter_Char * 11) / 22_000);
+         --  With bps > 19200, fixed time of 750 us for inter-character with
+         --  Inter_Char = 15, and fixed time of 1750 us for inter-frame with
+         --  Inter_Char = 35.
+         return Microseconds ((10**5 * Inter_Char * 11) / 22_000);
       end if;
    end Inter_Time;
 
@@ -51,17 +54,17 @@ package body MBus is
    function Get_High_Byte (Value : UInt16) return UInt8 is
       Val : constant UInt16 := Value;
    begin
-      return UInt8(Shift_Right (Val, 8));
+      return UInt8 (Shift_Right (Val, 8));
    end Get_High_Byte;
 
    ------------------
    -- Get_Low_Byte --
    ------------------
 
-   function Get_Low_Byte (Value: UInt16) return UInt8 is
+   function Get_Low_Byte (Value : UInt16) return UInt8 is
       Val : constant UInt16 := Value;
    begin
-      return UInt8(Val and 16#00FF#);
+      return UInt8 (Val and 16#00FF#);
    end Get_Low_Byte;
 
    --------------
@@ -70,7 +73,7 @@ package body MBus is
 
    function Get_Word (Hi : UInt8; Lo : UInt8) return UInt16 is
    begin
-      return (Shift_Left (UInt16(Hi), 8) and UInt16(Lo));
+      return (Shift_Left (UInt16 (Hi), 8) and UInt16 (Lo));
    end Get_Word;
 
    -------------------

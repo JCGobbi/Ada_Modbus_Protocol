@@ -41,7 +41,7 @@ package body Serial_IO.Blocking is
    ---------------------
    -- Get_Serial_Mode --
    ---------------------
-   
+
    function Get_Serial_Mode (This : in out Serial_Port) return Serial_Modes is
    begin
       return This.Serial_Mode;
@@ -92,7 +92,7 @@ package body Serial_IO.Blocking is
    begin
       for Next in 1 .. Msg.Get_Length loop
          Await_Send_Ready (This.Device.Transceiver.all);
-         Transmit (This.Device.Transceiver.all, UInt9(Msg.Get_Content_At (Next)));
+         Transmit (This.Device.Transceiver.all, UInt9 (Msg.Get_Content_At (Next)));
       end loop;
    end Put;
 
@@ -109,50 +109,50 @@ package body Serial_IO.Blocking is
 
          case This.Serial_Mode is
             when MBus_RTU =>
-               -- Exit Await_Data_Available on Read_Data_Register_Not_Empty with
-               -- time lesser than maximum inter-character time.
+               --  Exit Await_Data_Available on Read_Data_Register_Not_Empty with
+               --  time lesser than maximum inter-character time.
                Await_Data_Available (This.Device.Transceiver.all,
                                      Timeout   => This.InterChar_Timeout,
                                      Timed_Out => Timed_Out);
                if Timed_Out then -- Reached maximum inter-character time
-              
-                  -- Signalize that inter-character time is greater then the maximum.
+
+                  --  Signalize that inter-character time is greater then the maximum.
                   Msg.MBus_Note_Error (InterChar_Timed_Out);
 
-                  -- Exit Await_Data_Available on Read_Data_Register_Not_Empty or
-                  -- minimum inter-frame time.
+                  --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
+                  --  minimum inter-frame time.
                   Await_Data_Available (This.Device.Transceiver.all,
                                         Timeout   => This.InterFrame_Timeout,
                                         Timed_Out => Timed_Out);
                   if Timed_Out then
-                     -- Signalize that inter-frame time is greater then the minimum.
+                     --  Signalize that inter-frame time is greater then the minimum.
                      Msg.MBus_Note_Error (InterFrame_Timed_Out);
 
-                     -- Exit Await_Data_Available on Read_Data_Register_Not_Empty or
-                     -- maximum response time.
+                     --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
+                     --  maximum response time.
                      Await_Data_Available (This.Device.Transceiver.all,
                                            Timeout   => This.Response_Timeout,
                                            Timed_Out => Timed_Out);
                      if Timed_Out then
-                        -- Signalize that response time is greater then the maximum.
+                        --  Signalize that response time is greater then the maximum.
                         Msg.MBus_Note_Error (Response_Timed_Out);
                      end if;
                      exit Receiving;
                   end if;
                end if;
             when MBus_ASCII =>
-               -- Exit Await_Data_Available on Read_Data_Register_Not_Empty or
-               -- maximum response time.
+               --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
+               --  maximum response time.
                Await_Data_Available (This.Device.Transceiver.all,
                                      Timeout   => This.Response_Timeout,
                                      Timed_Out => Timed_Out);
                if Timed_Out then
-                  -- Signalize that response time is greater then the maximum.
+                  --  Signalize that response time is greater then the maximum.
                   Msg.MBus_Note_Error (Response_Timed_Out);
                   exit Receiving;
                end if;
             when Terminal =>
-               -- Exit Await_Data_Available on Read_Data_Register_Not_Empty.
+               --  Exit Await_Data_Available on Read_Data_Register_Not_Empty.
                Await_Data_Available (This.Device.Transceiver.all,
                                      Timed_Out => Timed_Out);
          end case;
@@ -161,18 +161,19 @@ package body Serial_IO.Blocking is
 
          case This.Serial_Mode is
             when MBus_RTU =>
-               Msg.Append (UInt8(Raw));
+               Msg.Append (UInt8 (Raw));
             when MBus_ASCII =>
-               Msg.Append (UInt8(Raw));
-               -- Test end-frame sequence CR + LF for modbus ASCII.
+               Msg.Append (UInt8 (Raw));
+               --  Test end-frame sequence CR + LF for modbus ASCII.
                if (Msg.Get_Content_At (Msg.Get_Length - 1) = 16#0D# and -- CR character
-                 Msg.Get_Content_At (Msg.Get_Length) = 16#0A#) then -- LF character
+                   Msg.Get_Content_At (Msg.Get_Length) = 16#0A#) -- LF character
+               then
                   exit Receiving;
                end if;
             when Terminal =>
-               -- Character CR is the last saved in the frame.
-               Msg.Append (UInt8(Raw));
-               exit Receiving when Raw = Character'Pos(Msg.Get_Terminator);
+               --  Character CR is the last saved in the frame.
+               Msg.Append (UInt8 (Raw));
+               exit Receiving when Raw = Character'Pos (Msg.Get_Terminator);
          end case;
 
       end loop Receiving;
@@ -196,12 +197,12 @@ package body Serial_IO.Blocking is
    procedure Await_Data_Available (This    : USART;
                                   Timeout : Time_Span := Time_Span_Last;
                                   Timed_Out : out Boolean) is
-   
+
       Deadline : constant Time := Clock + Timeout;
    begin
       Timed_Out := True;
-      -- Await new characters until USART Read_Data_Register_Not_Empty but,
-      -- if this doesn't happen, await until Clock = Timeout.
+      --  Await new characters until USART Read_Data_Register_Not_Empty but,
+      --  if this doesn't happen, await until Clock = Timeout.
       while Clock < Deadline loop
          if Rx_Ready (This) then
             Timed_Out := False;

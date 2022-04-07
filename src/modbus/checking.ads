@@ -3,7 +3,7 @@ with STM32.CRC; use STM32.CRC;
 
 package Checking is
 
-   procedure Update_CRC (Input : UInt8; CRC: in out UInt16);
+   procedure Update_CRC (Input : UInt8; CRC : in out UInt16);
    --  Updates the 16-bit CRC value from the 8-bit Input values and any
    --  previously-calculated CRC value. Output is the resulting CRC-16 value.
 
@@ -11,7 +11,7 @@ package Checking is
                          CRC   : in out UInt16);
    --  Updates the 16-bit CRC value from the 8-bit array Input values and any
    --  previously-calculated CRC value. Output is the resulting CRC-16 value.
-   
+
    procedure Update_CRC (Input : Block_8;
                          CRC   : in out UInt16;
                          Start : Natural;
@@ -30,7 +30,7 @@ package Checking is
    function Calculate_LRC (Input : Block_8) return UInt8;
    --  Calculates the 8-bit LRC value from the 8-bit array Input values.
    --  Output is the resulting LRC 8 bit value.
-   
+
    function Calculate_LRC (Input : Block_8;
                            Start : Natural;
                            Final : Natural) return UInt8 with

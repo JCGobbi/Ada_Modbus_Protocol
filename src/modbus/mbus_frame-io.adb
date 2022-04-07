@@ -4,14 +4,14 @@ package body MBus_Frame.IO is
    -- Send_Frame --
    ----------------
 
-   procedure Send_Frame (This : in out Serial_Port;  Msg : in out Message) is         
+   procedure Send_Frame (This : in out Serial_Port;  Msg : in out Message) is
    begin
       Await_Reception_Complete (Msg); -- serial outgoing buffer
 
       if (Get_Length (Msg) /= 0) then -- The min length is 4 UInt8 bytes
          Put (This, Msg'Unchecked_Access);
-         -- No need to wait for it here because the Put won't return until the
-         -- message has been sent
+         --  No need to wait for it here because the Put won't return until the
+         --  message has been sent
       end if;
 
       Signal_Transmission_Complete (Msg); -- serial outgoing buffer
@@ -25,11 +25,11 @@ package body MBus_Frame.IO is
    procedure Receive_Frame (This : in out Serial_Port; Msg : in out Message) is
    begin
       Await_Transmission_Complete (Msg); -- incoming buffer
-      -- Put frame from serial port to Incoming buffer
+      --  Put frame from serial port to Incoming buffer
       Get (This, Msg'Unchecked_Access);
 
       Signal_Reception_Complete (Msg); -- incoming buffer
-      
+
    end Receive_Frame;
-   
-end Mbus_Frame.IO;
+
+end MBus_Frame.IO;

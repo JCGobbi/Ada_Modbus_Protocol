@@ -11,7 +11,7 @@ package Serial_IO is
    MBus_Bps : Baud_Rates := 9_600;
    Term_Bps : Baud_Rates := 115_200;
 
-   -- Mode selection for the serial channel: modbus RTU, modbus ASCII and Terminal
+   --  Mode selection for the serial channel: modbus RTU, modbus ASCII and Terminal
    type Serial_Modes is (MBus_RTU, MBus_ASCII, Terminal);
 
    type Peripheral_Descriptor is record
@@ -27,7 +27,7 @@ package Serial_IO is
      (Device    : access Peripheral_Descriptor;
       Baud_Rate : Baud_Rates;
       Parity    : Parities     := No_Parity;
-      Data_Bits : Word_Lengths := Word_Length_8;
+      Data_Bits : Word_Lengths  := Word_Length_8;
       End_Bits  : Stop_Bits    := Stopbits_1;
       Control   : Flow_Control := No_Flow_Control);
 

@@ -18,7 +18,7 @@ package Message_Buffers is
      Inline;
 
    procedure Clear (This : in out Message) with
-     Post => Get_Length (This) = 0,-- and Content (This) = 0,
+     Post => Get_Length (This) = 0, -- and Content (This) = 0,
      Inline;
 
    procedure Append (This : in out Message;  Value : UInt8) with
@@ -74,10 +74,10 @@ package Message_Buffers is
    procedure MBus_Set_Mode (This : in out Message;  To : MBus_Modes) with
      Post => MBus_Get_Mode (This) = To,
      Inline;
-   -- Defines the way each frame is written into/read from the modbus outgoing/
-   -- incoming buffers according to the mode:
-   -- modbus RTU are treated as hexadecimal bytes,
-   -- modbus ASCII are treated as Character'Pos of the two nibles of each byte.
+   --  Defines the way each frame is written into/read from the modbus outgoing/
+   --  incoming buffers according to the mode:
+   --  modbus RTU are treated as hexadecimal bytes,
+   --  modbus ASCII are treated as Character'Pos of the two nibles of each byte.
 
    procedure MBus_Note_Error (This : in out Message; Condition : MBus_Error_Conditions)
      with Inline;

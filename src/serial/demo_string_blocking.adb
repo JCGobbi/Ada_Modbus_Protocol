@@ -36,45 +36,45 @@ procedure Demo_String_Blocking is
    ------------------------------
 
    procedure Send (This : String);
-     
+
    procedure Send (This : String) is
       Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
-         Pos := Character'Pos (This(i));
+         Pos := Character'Pos (This (i));
          CharPos (i) := Pos;
       end loop;
-      
+
       Await_Transmission_Complete (Outgoing); -- outgoing buffer
       Set_Content (Outgoing, To => CharPos);
       Signal_Reception_Complete (Outgoing); -- outgoing buffer
       Await_Reception_Complete (Outgoing); -- outgoing buffer
       Put (Term_COM, Outgoing'Unchecked_Access);
-      -- No need to wait for it here because the Put won't return until the
-      -- message has been sent.
+      --  No need to wait for it here because the Put won't return until the
+      --  message has been sent.
       Signal_Transmission_Complete (Outgoing); -- outgoing buffer
    end Send;
 
 begin
-   -- The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
-   -- serial channel are defined at Serial_IO.ads. This mode only affects the
-   -- reception of data choosing the end of frame mode in the Get procedure at
-   -- Serial_IO.Blocking.
+   --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
+   --  serial channel are defined at Serial_IO.ads. This mode only affects the
+   --  reception of data choosing the end of frame mode in the Get procedure at
+   --  Serial_IO.Blocking.
 
-   -- Configuration for Terminal console
+   --  Configuration for Terminal console
    Initialize (Term_COM);
    Configure (Term_COM, Baud_Rate => 115_200);
    Set_Serial_Mode (Term_COM, Terminal);
-   
-   -- Start with outgoing buffer empty, so there is no need to wait.
+
+   --  Start with outgoing buffer empty, so there is no need to wait.
    Signal_Transmission_Complete (Outgoing); -- outgoing buffer
-   
-   -- Start with incoming buffer empty, so there is no need to wait.
+
+   --  Start with incoming buffer empty, so there is no need to wait.
    Signal_Transmission_Complete (Incoming); -- incoming buffer
-   
+
    Send ("Enter text, terminated by CR." & ASCII.CR & ASCII.LF);
-      
+
    Set_Terminator (Incoming, To => ASCII.CR);
    loop
       Await_Transmission_Complete (Incoming); -- incoming buffer
@@ -83,17 +83,17 @@ begin
       Send ("Received : ");
 
       Await_Reception_Complete (Incoming); -- incoming buffer
-      if (Get_Content_At (Incoming, 1) = Character'Pos(Incoming.Get_Terminator))  then
+      if (Get_Content_At (Incoming, 1) = Character'Pos (Incoming.Get_Terminator))  then
          Send ("no characters." & ASCII.CR & ASCII.LF);
       else
          declare
             IntPos : UInt8_Array (1 .. Get_Length (Incoming));
-            -- The IntPos array has dynamic length, so we need to declare its size
-            -- inside the loop.
+            --  The IntPos array has dynamic length, so we need to declare its size
+            --  inside the loop.
          begin
             IntPos := Get_Content (Incoming);
             Await_Transmission_Complete (Outgoing); -- outgoing buffer
-            Set_Content (Outgoing, To => IntPos);         
+            Set_Content (Outgoing, To => IntPos);
          end;
          Signal_Reception_Complete (Outgoing); -- outgoing buffer
          Await_Reception_Complete (Outgoing); -- outgoing buffer
@@ -104,5 +104,5 @@ begin
       Signal_Transmission_Complete (Incoming);
 
    end loop;
-   
+
 end Demo_String_Blocking;
