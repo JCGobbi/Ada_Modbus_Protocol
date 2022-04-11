@@ -1,5 +1,4 @@
-with HAL;       use HAL;
-with STM32.CRC; use STM32.CRC;
+with HAL; use HAL;
 
 package Checking is
 
@@ -7,12 +6,12 @@ package Checking is
    --  Updates the 16-bit CRC value from the 8-bit Input values and any
    --  previously-calculated CRC value. Output is the resulting CRC-16 value.
 
-   procedure Update_CRC (Input : Block_8;
+   procedure Update_CRC (Input : UInt8_Array;
                          CRC   : in out UInt16);
    --  Updates the 16-bit CRC value from the 8-bit array Input values and any
    --  previously-calculated CRC value. Output is the resulting CRC-16 value.
 
-   procedure Update_CRC (Input : Block_8;
+   procedure Update_CRC (Input : UInt8_Array;
                          CRC   : in out UInt16;
                          Start : Natural;
                          Final : Natural) with
@@ -27,11 +26,11 @@ package Checking is
    --  calculations due to calls to Update_CRC are lost. Does not affect
    --  the contents of the unit's independent data.
 
-   function Calculate_LRC (Input : Block_8) return UInt8;
+   function Calculate_LRC (Input : UInt8_Array) return UInt8;
    --  Calculates the 8-bit LRC value from the 8-bit array Input values.
    --  Output is the resulting LRC 8 bit value.
 
-   function Calculate_LRC (Input : Block_8;
+   function Calculate_LRC (Input : UInt8_Array;
                            Start : Natural;
                            Final : Natural) return UInt8 with
      Pre => ((Start >= Input'First and Final <= Input'Last and Start < Final)

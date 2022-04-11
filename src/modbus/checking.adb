@@ -33,7 +33,7 @@ package body Checking is
    -- Update_CRC ---
    -----------------
 
-   procedure Update_CRC (Input : Block_8;
+   procedure Update_CRC (Input : UInt8_Array;
                          CRC   : in out UInt16)
    is
    begin
@@ -47,7 +47,7 @@ package body Checking is
    -- Update_CRC ---
    -----------------
 
-   procedure Update_CRC (Input : Block_8;
+   procedure Update_CRC (Input : UInt8_Array;
                          CRC   : in out UInt16;
                          Start : Natural;
                          Final : Natural)
@@ -72,7 +72,7 @@ package body Checking is
    -- Calculate_LRC ---
    --------------------
 
-   function Calculate_LRC (Input : Block_8) return UInt8
+   function Calculate_LRC (Input : UInt8_Array) return UInt8
    is
       LRC : UInt16 := 16#0000#;
    begin
@@ -86,7 +86,7 @@ package body Checking is
    -- Calculate_LRC ---
    --------------------
 
-   function Calculate_LRC (Input : Block_8;
+   function Calculate_LRC (Input : UInt8_Array;
                            Start : Natural;
                            Final : Natural) return UInt8
    is
