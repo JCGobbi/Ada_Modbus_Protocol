@@ -1,7 +1,6 @@
-with HAL;          use HAL;
-with STM32.Device; use STM32.Device;
+with HAL;  use HAL;
 
-with MBus;         use MBus;
+with MBus; use MBus;
 
 package body Serial_IO.Blocking is
 
@@ -11,7 +10,7 @@ package body Serial_IO.Blocking is
 
    procedure Initialize (This : out Serial_Port) is
    begin
-      Serial_IO.Initialize_Peripheral (This.Device);
+      Serial_IO.Initialize_Peripheral (This.Periph);
       This.Initialized := True;
    end Initialize;
 
@@ -35,7 +34,7 @@ package body Serial_IO.Blocking is
       Control   : Flow_Control := No_Flow_Control)
    is
    begin
-      Serial_IO.Configure (This.Device, Baud_Rate, Parity, Data_Bits, End_Bits, Control);
+      Serial_IO.Configure (This.Periph, Baud_Rate, Parity, Data_Bits, End_Bits, Control);
    end Configure;
 
    ---------------------
@@ -91,8 +90,8 @@ package body Serial_IO.Blocking is
    procedure Put (This : in out Serial_Port;  Msg : not null access Message) is
    begin
       for Next in 1 .. Msg.Get_Length loop
-         Await_Send_Ready (This.Device.Transceiver.all);
-         Transmit (This.Device.Transceiver.all, UInt9 (Msg.Get_Content_At (Next)));
+         Await_Send_Ready (This.Periph.Transceiver.all);
+         Transmit (This.Periph.Transceiver.all, UInt9 (Msg.Get_Content_At (Next)));
       end loop;
    end Put;
 
@@ -111,7 +110,7 @@ package body Serial_IO.Blocking is
             when MBus_RTU =>
                --  Exit Await_Data_Available on Read_Data_Register_Not_Empty with
                --  time lesser than maximum inter-character time.
-               Await_Data_Available (This.Device.Transceiver.all,
+               Await_Data_Available (This.Periph.Transceiver.all,
                                      Timeout   => This.InterChar_Timeout,
                                      Timed_Out => Timed_Out);
                if Timed_Out then -- Reached maximum inter-character time
@@ -121,7 +120,7 @@ package body Serial_IO.Blocking is
 
                   --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
                   --  minimum inter-frame time.
-                  Await_Data_Available (This.Device.Transceiver.all,
+                  Await_Data_Available (This.Periph.Transceiver.all,
                                         Timeout   => This.InterFrame_Timeout,
                                         Timed_Out => Timed_Out);
                   if Timed_Out then
@@ -130,7 +129,7 @@ package body Serial_IO.Blocking is
 
                      --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
                      --  maximum response time.
-                     Await_Data_Available (This.Device.Transceiver.all,
+                     Await_Data_Available (This.Periph.Transceiver.all,
                                            Timeout   => This.Response_Timeout,
                                            Timed_Out => Timed_Out);
                      if Timed_Out then
@@ -143,7 +142,7 @@ package body Serial_IO.Blocking is
             when MBus_ASCII =>
                --  Exit Await_Data_Available on Read_Data_Register_Not_Empty or
                --  maximum response time.
-               Await_Data_Available (This.Device.Transceiver.all,
+               Await_Data_Available (This.Periph.Transceiver.all,
                                      Timeout   => This.Response_Timeout,
                                      Timed_Out => Timed_Out);
                if Timed_Out then
@@ -153,11 +152,11 @@ package body Serial_IO.Blocking is
                end if;
             when Terminal =>
                --  Exit Await_Data_Available on Read_Data_Register_Not_Empty.
-               Await_Data_Available (This.Device.Transceiver.all,
+               Await_Data_Available (This.Periph.Transceiver.all,
                                      Timed_Out => Timed_Out);
          end case;
 
-         Receive (This.Device.Transceiver.all, Raw);
+         Receive (This.Periph.Transceiver.all, Raw);
 
          case This.Serial_Mode is
             when MBus_RTU =>
@@ -194,10 +193,11 @@ package body Serial_IO.Blocking is
    -- Await_Data_Available --
    --------------------------
 
-   procedure Await_Data_Available (This    : USART;
-                                  Timeout : Time_Span := Time_Span_Last;
-                                  Timed_Out : out Boolean) is
-
+   procedure Await_Data_Available
+     (This    : USART;
+      Timeout : Time_Span := Time_Span_Last;
+      Timed_Out : out Boolean)
+   is
       Deadline : constant Time := Clock + Timeout;
    begin
       Timed_Out := True;
