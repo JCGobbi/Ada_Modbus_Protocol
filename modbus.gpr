@@ -28,7 +28,8 @@ project Modbus extends "Ada_Drivers_Library/repo/examples/shared/common/common.g
    package Linker is
       for Default_Switches ("Ada") use
          ("-Wl,--gc-sections",  --  Don't link unused code sections
-          "-Wl,--print-gc-sections");  --  List removed unused code sections
+          "-Wl,--print-gc-sections",  --  List removed unused code sections
+          "-Wl,--print-memory-usage");
    end Linker;
 
    package Ide is
