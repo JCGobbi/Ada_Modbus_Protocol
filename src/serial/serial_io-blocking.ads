@@ -16,7 +16,7 @@ with Message_Buffers; use Message_Buffers;
 package Serial_IO.Blocking is
    pragma Elaborate_Body;
 
-   type Serial_Port (Periph : not null access Peripheral_Descriptor) is
+   type Serial_Port (Device : not null access Peripheral_Descriptor) is
      tagged limited private;
 
    procedure Initialize (This : out Serial_Port)
@@ -64,20 +64,20 @@ package Serial_IO.Blocking is
      with Inline;
 
    --  This procedure was modified for MODBUS
-   procedure Put (This : in out Serial_Port; Msg : not null access Message)
+   procedure Send (This : in out Serial_Port; Msg : not null access Message)
      with Pre => (Initialized (This) or else raise Serial_Port_Uninitialized);
    --  Sends Msg.Length characters of Msg via USART attached to This. Callers
    --  wait until all characters are sent.
 
    --  This procedure was modified for MODBUS
-   procedure Get (This : in out Serial_Port; Msg : not null access Message)
+   procedure Receive (This : in out Serial_Port; Msg : not null access Message)
      with Pre  => (Initialized (This) or else raise Serial_Port_Uninitialized),
           Post => Msg.Get_Length <= Msg.Physical_Size;
    --  Callers wait until all characters are received.
 
 private
 
-   type Serial_Port (Periph : access Peripheral_Descriptor) is
+   type Serial_Port (Device : access Peripheral_Descriptor) is
       tagged limited record
          Initialized        : Boolean := False;
          Serial_Mode        : Serial_Modes := MBus_RTU;

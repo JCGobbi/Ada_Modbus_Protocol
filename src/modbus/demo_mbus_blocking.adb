@@ -53,10 +53,10 @@ procedure Demo_MBus_Blocking is
    -- Procedures and functions --
    ------------------------------
 
-   procedure Send (This : String);
+   procedure Send_String (This : String);
    --  Translate a string into a sequence of ASCII addresses and send the frame.
 
-   procedure Send (This : String) is
+   procedure Send_String (This : String) is
       Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
@@ -68,11 +68,11 @@ procedure Demo_MBus_Blocking is
       Set_Content (Term_Outgoing, To => CharPos);
       Signal_Reception_Complete (Term_Outgoing); -- outgoing buffer
       Await_Reception_Complete (Term_Outgoing); -- outgoing buffer
-      Put (Term_COM, Term_Outgoing'Unchecked_Access);
+      Send (Term_COM, Term_Outgoing'Unchecked_Access);
       --  No need to wait for it here because the Put won't return until the
       --  message has been sent.
       Signal_Transmission_Complete (Term_Outgoing); -- outgoing buffer
-   end Send;
+   end Send_String;
 
 begin
    --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
@@ -106,23 +106,24 @@ begin
 
    Set_Terminator (Term_Incoming, To => ASCII.CR);
 
-   Send ("Test terminal monitoring and modbus comunication in different"
-         & " serial channels." & ASCII.CR & ASCII.LF);
+   Send_String ("Test terminal monitoring and modbus comunication in different"
+     & " serial channels." & ASCII.CR & ASCII.LF);
    --  This test waits the receiving of a frame in the modbus serial channel,
    --  so you will need a modbus client connected to MBus_COM port.
-   Send ("The terminal will only monitor the receipt of a modbus stream as"
-         & " responding to a client request." & ASCII.CR & ASCII.LF);
+   Send_String ("The terminal will only monitor the receipt of a modbus stream as"
+     & " responding to a client request." & ASCII.CR & ASCII.LF);
 
    loop
-      Send ("Choose the number that corresponds to a modbus RTU or"
-            & " ASCII test protocol." & ASCII.CR & ASCII.LF);
-      Send ("1 - Modbus RTU." & ASCII.CR & ASCII.LF);
-      Send ("2 - Modbus ASCII." & ASCII.CR & ASCII.LF);
+      Send_String ("Choose the number that corresponds to a modbus RTU or"
+        & " ASCII test protocol." & ASCII.CR & ASCII.LF);
+      Send_String ("1 - Modbus RTU." & ASCII.CR & ASCII.LF);
+      Send_String ("2 - Modbus ASCII." & ASCII.CR & ASCII.LF);
 
       Signal_Transmission_Complete (Term_Incoming); -- incoming buffer
       Receive_Frame (Term_COM, Term_Incoming);
       if Term_Incoming.MBus_Has_Error (Response_Timed_Out) then
-         Send ("No valid option, please reset the board." & ASCII.CR & ASCII.LF);
+         Send_String ("No valid option, please reset the board."
+           & ASCII.CR & ASCII.LF);
       end if;
 
       Await_Reception_Complete (Term_Incoming); -- incoming buffer
@@ -131,29 +132,29 @@ begin
           or ((Get_Content_At (Term_Incoming, 1) /= Character'Pos ('1'))
           and (Get_Content_At (Term_Incoming, 1) /= Character'Pos ('2')))
       then
-         Send ("No valid option, please try again." & ASCII.CR & ASCII.LF);
+         Send_String ("No valid option, please try again." & ASCII.CR & ASCII.LF);
       else
          if Get_Content_At (Term_Incoming, 1) = Character'Pos ('1') then
-            Send ("Option 1 - Modbus RTU protocol." & ASCII.CR & ASCII.LF);
+            Send_String ("Option 1 - Modbus RTU protocol." & ASCII.CR & ASCII.LF);
             MBus_Set_Mode (Incoming, RTU);
             MBus_Set_Mode (Outgoing, RTU);
             Set_Serial_Mode (MBus_COM, MBus_RTU);
          elsif Get_Content_At (Term_Incoming, 1) = Character'Pos ('2') then
-            Send ("Option 2 - Modbus ASCII protocol." & ASCII.CR & ASCII.LF);
+            Send_String ("Option 2 - Modbus ASCII protocol." & ASCII.CR & ASCII.LF);
             MBus_Set_Mode (Incoming, ASC);
             MBus_Set_Mode (Outgoing, ASC);
             Set_Serial_Mode (MBus_COM, MBus_ASCII);
          end if;
 
-         Send ("Send a response to a Read_Discrete_Inputs with:"
-               & ASCII.CR & ASCII.LF);
-         Send ("Server_Address = 10, Function_Code = 15, Byte_Count = 08"
-               & ASCII.CR & ASCII.LF);
-         Send ("and Input_Status = (52, 175, 194, 147, 84, 103, 184, 224)."
-               & ASCII.CR & ASCII.LF);
+         Send_String ("Send a response to a Read_Discrete_Inputs with:"
+           & ASCII.CR & ASCII.LF);
+         Send_String ("Server_Address = 10, Function_Code = 15, Byte_Count = 08"
+           & ASCII.CR & ASCII.LF);
+         Send_String ("and Input_Status = (52, 175, 194, 147, 84, 103, 184, 224)."
+           & ASCII.CR & ASCII.LF);
 
          --  Wait for the transmission of the modbus frame
-         Send ("Waiting for a modbus ADU message from the client... "
+         Send_String ("Waiting for a modbus ADU message from the client... "
                & ASCII.CR & ASCII.LF);
          Signal_Transmission_Complete (Incoming); -- incoming buffer
          --  Here the MBus_Task receives the autorization to receive the modbus
@@ -171,38 +172,37 @@ begin
                                        Input_Status  => PosInput);
          end;
 
-         Send ("Modbus ADU message transmited. " & ASCII.CR & ASCII.LF);
+         Send_String ("Modbus ADU message transmited. " & ASCII.CR & ASCII.LF);
 
          --  For testing purposes
-         Send ("MBus outgoing buffer length: "
-               & Integer'Image (Get_Length (Outgoing))
-               & ASCII.CR & ASCII.LF);
-         Send ("Server Address: "
-               & Integer'Image (Integer (MBus_Get_Address (Outgoing)))
-               & ASCII.CR & ASCII.LF);
-         Send ("Function Code: "
-               & Integer'Image (Integer (MBus_Get_Function_Code (Outgoing)))
-               & ASCII.CR & ASCII.LF);
-         Send ("Byte Count: "
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 3)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 4)))
-               & ASCII.CR & ASCII.LF);
-         Send ("Input Status: "
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 5)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 6)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 7)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 8)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 9)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 10)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 11)))
-               & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 12)))
-               & ASCII.CR & ASCII.LF);
+         Send_String ("MBus outgoing buffer length: "
+           & Integer'Image (Get_Length (Outgoing))
+           & ASCII.CR & ASCII.LF);
+         Send_String ("Server Address: "
+           & Integer'Image (Integer (MBus_Get_Address (Outgoing)))
+           & ASCII.CR & ASCII.LF);
+         Send_String ("Function Code: "
+           & Integer'Image (Integer (MBus_Get_Function_Code (Outgoing)))
+           & ASCII.CR & ASCII.LF);
+         Send_String ("Byte Count: "
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 3)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 4)))
+           & ASCII.CR & ASCII.LF);
+         Send_String ("Input Status: "
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 5)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 6)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 7)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 8)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 9)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 10)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 11)))
+           & Integer'Image (Integer (MBus_Get_Data_At (Outgoing, 12)))
+           & ASCII.CR & ASCII.LF);
          --  End testing
 
          Await_Reception_Complete (Incoming);
-         Send ("MBus incoming buffer length: "
-               & Integer'Image (Get_Length (Incoming))
-               & ASCII.CR & ASCII.LF);
+         Send_String ("MBus incoming buffer length: "
+           & Integer'Image (Get_Length (Incoming)) & ASCII.CR & ASCII.LF);
          --  Read the received modbus frame
          if Get_Length (Incoming) > 0 then
 
@@ -210,29 +210,29 @@ begin
               not Incoming.MBus_Has_Error (InterFrame_Timed_Out) and
               not Incoming.MBus_Has_Error (Response_Timed_Out)
             then
-               Send ("No time out detected." & ASCII.CR & ASCII.LF);
+               Send_String ("No time out detected." & ASCII.CR & ASCII.LF);
             end if;
 
-            Send ("Server Address: "
-                  & Integer'Image (Integer (MBus_Get_Address (Incoming)))
-                  & ASCII.CR & ASCII.LF);
-            Send ("Function Code: "
-                  & Integer'Image (Integer (MBus_Get_Function_Code (Incoming)))
-                  & ASCII.CR & ASCII.LF);
-            Send ("Byte Count: "
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 3)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 4)))
-                  & ASCII.CR & ASCII.LF);
-            Send ("Input Status: "
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 5)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 6)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 7)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 8)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 9)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 10)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 11)))
-                  & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 12)))
-                  & ASCII.CR & ASCII.LF);
+            Send_String ("Server Address: "
+              & Integer'Image (Integer (MBus_Get_Address (Incoming)))
+              & ASCII.CR & ASCII.LF);
+            Send_String ("Function Code: "
+              & Integer'Image (Integer (MBus_Get_Function_Code (Incoming)))
+              & ASCII.CR & ASCII.LF);
+            Send_String ("Byte Count: "
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 3)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 4)))
+              & ASCII.CR & ASCII.LF);
+            Send_String ("Input Status: "
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 5)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 6)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 7)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 8)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 9)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 10)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 11)))
+              & Integer'Image (Integer (MBus_Get_Data_At (Incoming, 12)))
+              & ASCII.CR & ASCII.LF);
 
             declare
                Chain : UInt8_Array (1 .. Get_Length (Incoming));
@@ -247,16 +247,16 @@ begin
             end;
          else
             if Incoming.MBus_Has_Error (InterChar_Timed_Out) then
-               Send ("InterChar timed out. ");
+               Send_String ("InterChar timed out. ");
             end if;
             if Incoming.MBus_Has_Error (InterFrame_Timed_Out) then
-               Send ("InterFrame timed out. ");
+               Send_String ("InterFrame timed out. ");
             end if;
             if Incoming.MBus_Has_Error (Response_Timed_Out) then
-               Send ("Response timed out.");
+               Send_String ("Response timed out.");
             end if;
-            Send (ASCII.CR & ASCII.LF & "Wait for a new cycle."
-                  & ASCII.CR & ASCII.LF);
+            Send_String (ASCII.CR & ASCII.LF & "Wait for a new cycle."
+              & ASCII.CR & ASCII.LF);
          end if;
          MBus_Clear_Errors (Incoming);
          delay until Clock + Seconds (5); -- Wait 5.0 seconds before receive the next frame

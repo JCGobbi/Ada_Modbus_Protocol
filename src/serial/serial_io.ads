@@ -21,10 +21,10 @@ package Serial_IO is
       Rx_Pin         : GPIO_Point;
    end record;
 
-   procedure Initialize_Peripheral (Periph : access Peripheral_Descriptor);
+   procedure Initialize_Peripheral (Device : access Peripheral_Descriptor);
 
    procedure Configure
-     (Periph    : access Peripheral_Descriptor;
+     (Device    : access Peripheral_Descriptor;
       Baud_Rate : Baud_Rates;
       Parity    : Parities     := No_Parity;
       Data_Bits : Word_Lengths  := Word_Length_8;

@@ -35,9 +35,9 @@ procedure Demo_String_Blocking is
    -- Procedures and functions --
    ------------------------------
 
-   procedure Send (This : String);
+   procedure Send_String (This : String);
 
-   procedure Send (This : String) is
+   procedure Send_String (This : String) is
       Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
@@ -50,11 +50,11 @@ procedure Demo_String_Blocking is
       Set_Content (Outgoing, To => CharPos);
       Signal_Reception_Complete (Outgoing); -- outgoing buffer
       Await_Reception_Complete (Outgoing); -- outgoing buffer
-      Put (Term_COM, Outgoing'Unchecked_Access);
+      Send (Term_COM, Outgoing'Unchecked_Access);
       --  No need to wait for it here because the Put won't return until the
       --  message has been sent.
       Signal_Transmission_Complete (Outgoing); -- outgoing buffer
-   end Send;
+   end Send_String;
 
 begin
    --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
@@ -73,18 +73,18 @@ begin
    --  Start with incoming buffer empty, so there is no need to wait.
    Signal_Transmission_Complete (Incoming); -- incoming buffer
 
-   Send ("Enter text, terminated by CR." & ASCII.CR & ASCII.LF);
+   Send_String ("Enter text, terminated by CR." & ASCII.CR & ASCII.LF);
 
    Set_Terminator (Incoming, To => ASCII.CR);
    loop
       Await_Transmission_Complete (Incoming); -- incoming buffer
-      Get (Term_COM, Incoming'Unchecked_Access);
+      Receive (Term_COM, Incoming'Unchecked_Access);
       Signal_Reception_Complete (Incoming); -- incoming buffer
-      Send ("Received : ");
+      Send_String ("Received : ");
 
       Await_Reception_Complete (Incoming); -- incoming buffer
       if (Get_Content_At (Incoming, 1) = Character'Pos (Incoming.Get_Terminator))  then
-         Send ("no characters." & ASCII.CR & ASCII.LF);
+         Send_String ("no characters." & ASCII.CR & ASCII.LF);
       else
          declare
             IntPos : UInt8_Array (1 .. Get_Length (Incoming));
@@ -97,9 +97,9 @@ begin
          end;
          Signal_Reception_Complete (Outgoing); -- outgoing buffer
          Await_Reception_Complete (Outgoing); -- outgoing buffer
-         Put (Term_COM, Outgoing'Unchecked_Access);
+         Send (Term_COM, Outgoing'Unchecked_Access);
          Signal_Transmission_Complete (Outgoing); -- outgoing buffer
-         Send ("" & ASCII.LF); -- The frame already has CR
+         Send_String ("" & ASCII.LF); -- The frame already has CR
       end if;
       Signal_Transmission_Complete (Incoming);
 

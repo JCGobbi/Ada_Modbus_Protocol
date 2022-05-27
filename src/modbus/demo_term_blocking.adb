@@ -37,10 +37,10 @@ procedure Demo_Term_Blocking is
    -- Procedures and functions --
    ------------------------------
 
-   procedure Send (This : String);
+   procedure Send_String (This : String);
    --  Translate a string into a sequence of ASCII addresses and send the frame.
 
-   procedure Send (This : String) is
+   procedure Send_String (This : String) is
       Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
@@ -53,11 +53,11 @@ procedure Demo_Term_Blocking is
       Set_Content (Outgoing, To => CharPos);
       Signal_Reception_Complete (Outgoing); -- outgoing buffer
       Await_Reception_Complete (Outgoing); -- outgoing buffer
-      Put (Term_COM, Outgoing'Unchecked_Access);
+      Send (Term_COM, Outgoing'Unchecked_Access);
       --  No need to wait for it here because the Put won't return until the
       --  message has been sent.
       Signal_Transmission_Complete (Outgoing); -- outgoing buffer
-   end Send;
+   end Send_String;
 
 begin
    --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
@@ -87,23 +87,23 @@ begin
 
    Set_Terminator (Incoming, To => ASCII.CR);
 
-   Send ("Test terminal monitoring and modbus comunication in the same"
+   Send_String ("Test terminal monitoring and modbus comunication in the same"
          & " terminal serial channel." & ASCII.CR & ASCII.LF);
    --  This test emits a frame that needs the disabling of the command
    --  MBus_Set_Checking of the Write_Frame procedure in the MBus_Functions.adb
    --  file, called in the MBus_Read_Discrete_Inputs bellow. That command
    --  calculates the CRC or LRC checking of the frame, and produces unknown
    --  results that the terminal don't understand.
-   Send ("The terminal will receive a modbus stream as responding to a"
+   Send_String ("The terminal will receive a modbus stream as responding to a"
          & " client request." & ASCII.CR & ASCII.LF);
 
    loop
       Set_Serial_Mode (Term_COM, Terminal);
       --  because MBus_Port = Term_COM
-      Send ("Choose the number that corresponds to a modbus RTU or"
+      Send_String ("Choose the number that corresponds to a modbus RTU or"
             & " ASCII test protocol." & ASCII.CR & ASCII.LF);
-      Send ("1 - Modbus RTU." & ASCII.CR & ASCII.LF);
-      Send ("2 - Modbus ASCII." & ASCII.CR & ASCII.LF);
+      Send_String ("1 - Modbus RTU." & ASCII.CR & ASCII.LF);
+      Send_String ("2 - Modbus ASCII." & ASCII.CR & ASCII.LF);
       Signal_Transmission_Complete (Incoming); -- incoming buffer
 
       Receive_Frame (Term_COM, Incoming);
@@ -113,14 +113,14 @@ begin
           or ((Get_Content_At (Incoming, 1) /= Character'Pos ('1'))
           and (Get_Content_At (Incoming, 1) /= Character'Pos ('2')))
       then
-         Send ("No valid option, please try again." & ASCII.CR & ASCII.LF);
+         Send_String ("No valid option, please try again." & ASCII.CR & ASCII.LF);
       else
          if (Get_Content_At (Incoming, 1) = Character'Pos ('1')) then
-            Send ("Option 1. Send a response to a Read_Discrete_Inputs with:"
+            Send_String ("Option 1. Send a response to a Read_Discrete_Inputs with:"
                    & ASCII.CR & ASCII.LF);
-            Send ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
+            Send_String ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send ("and Input_Status = (1F, 23, 47, 80)."
+            Send_String ("and Input_Status = (1F, 23, 47, 80)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, RTU);
@@ -149,11 +149,11 @@ begin
             end;
 
          elsif (Get_Content_At (Incoming, 1) = Character'Pos ('2')) then
-            Send ("Option 2. Send a response to a Read_Discrete_Inputs with:"
+            Send_String ("Option 2. Send a response to a Read_Discrete_Inputs with:"
                    & ASCII.CR & ASCII.LF);
-            Send ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
+            Send_String ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send ("and Input_Status = (1F, 23, 47, 80)."
+            Send_String ("and Input_Status = (1F, 23, 47, 80)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, ASC);

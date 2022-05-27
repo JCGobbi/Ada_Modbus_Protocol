@@ -9,7 +9,7 @@ package body MBus_Frame.IO is
       Await_Reception_Complete (Msg); -- serial outgoing buffer
 
       if (Get_Length (Msg) /= 0) then -- The min length is 4 UInt8 bytes
-         Put (This, Msg'Unchecked_Access);
+         Send (This, Msg'Unchecked_Access);
          --  No need to wait for it here because the Put won't return until the
          --  message has been sent
       end if;
@@ -26,7 +26,7 @@ package body MBus_Frame.IO is
    begin
       Await_Transmission_Complete (Msg); -- incoming buffer
       --  Put frame from serial port to Incoming buffer
-      Get (This, Msg'Unchecked_Access);
+      Receive (This, Msg'Unchecked_Access);
 
       Signal_Reception_Complete (Msg); -- incoming buffer
 
