@@ -121,41 +121,9 @@ package body MBus_Functions is
                               Function_Code  : UInt8;
                               Data_Chain     : UInt8_Array)
    is
-      Check : UInt16;
    begin
-      Await_Transmission_Complete (Msg); -- outgoing buffer
-      Clear (Msg);
-      --  Start writting modbus buffer
-      MBus_Set_Address (Msg, Server_Address);
-      MBus_Set_Function_Code (Msg, Function_Code);
-
-      --  Test if data is not empty
-      if Data_Chain'Length >= 1 then
-         for i in 1 .. Data_Chain'Length loop
-            MBus_Append_Data (Msg, Data_Chain (i));
-         end loop;
-      end if;
-
-      --  Calculate the actual CRC
-      case MBus_Get_Mode (Msg) is
-         when RTU =>
-            Check := 16#FFFF#;
-            for i in 1 .. Get_Length (Msg) loop
-               Update_CRC (Get_Content_At (Msg, i), Check);
-            end loop;
-         when ASC =>
-            Check := 16#0000#;
-            for i in 2 .. Get_Length (Msg) loop
-               Check := Check + UInt16 (Get_Content_At (Msg, i));
-            end loop;
-            Check := (16#00FF# - (Check and 16#00FF#)) - 1; -- 2's complement
-         when TCP =>
-            null;
-      end case;
-      --  Set checking in Msg
-      MBus_Set_Checking (Msg, Check);
-
-      Signal_Reception_Complete (Msg); -- modbus outgoing buffer
+      --  Save data from the Data_Chain array to the MBus_Outcoming buffer.
+      Write_Frame (Msg, Server_Address, Function_Code, Data_Chain);
 
       --  Send the frame from the MBus_Outcoming buffer to the Serial_Outcoming buffer,
       --  and to serial channel.
@@ -225,48 +193,12 @@ package body MBus_Functions is
                                 Data_Chain     : in out UInt8_Array)
    is
    begin
-      --  Before doing this, we must get the modbus frame from the serial channel
-      --  to the Incoming buffer.
+      --  Get the Serial_Incoming buffer from the serial channel to the
+      --  MBus_Incoming buffer.
       Receive_Frame (This => MBus_Port, Msg => Msg);
-      Await_Reception_Complete (Msg); -- modbus incoming buffer
 
-      --  Process errors from the modbus incoming buffer frame
-      Process_Error_Status (This => Msg,
-                            Server_Address => Server_Address,
-                            Function_Code => Function_Code);
-
-      if not MBus_Has_Error (Msg, Invalid_Address) xor
-         not MBus_Has_Error (Msg, Invalid_Function_Code)
-      then
-
-         --  Test if data is not empty
-         case MBus_Get_Mode (Msg) is
-            when RTU =>
-               if Get_Length (Msg) > 6 then
-                  --  The buffer has 2 address + 2 function + data + 2 CRC bytes.
-                  --  MBus_Get_Data_At takes a byte starting at 5th position of buffer.
-                  for i in 1 .. (Get_Length (Msg) - 6) loop
-                     Data_Chain (i) := Get_Content_At (Msg, i + 4);
-                  end loop;
-               end if;
-            when ASC =>
-               if Get_Length (Msg) > 9 then
-                  --  The buffer has 1 start + 2 address + 2 function + data + 2 LRC + 2 end chars.
-                  --  Data has an even number of chars.
-                  --  MBus_Get_Data_At takes a pair of chars starting at 6th position of buffer.
-                  for i in 1 .. ((Get_Length (Msg) - 11) / 2) loop
-                     Data_Chain (i) := MBus_Get_Data_At (Msg, i + 2);
-                  end loop;
-               end if;
-            when TCP =>
-               null;
-         end case;
-      end if;
-
-      --  Save errors in the last position of Data
-      Data_Chain (Data_Chain'Last) := UInt8 (MBus_Errors_Detected (Msg));
-
-      Signal_Transmission_Complete (Msg); -- incoming buffer
+      --  Save data from the MBus_Incoming buffer to the Data_Chain array.
+      Read_Frame (Msg, Server_Address, Function_Code, Data_Chain);
 
    end ReadReceive_Frame;
 
