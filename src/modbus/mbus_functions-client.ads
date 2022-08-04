@@ -18,7 +18,7 @@ package MBus_Functions.Client is
      (Address        : MBus_Server_Address;
       Output_Address : UInt16;
       Output_Value   : UInt16);
-   
+
    procedure MBus_Write_Multiple_Coils
      (Address             : MBus_Server_Address;
       Starting_Address    : UInt16;
