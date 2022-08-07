@@ -73,7 +73,7 @@ package body MBus is
 
    function Get_Word (Hi : UInt8; Lo : UInt8) return UInt16 is
    begin
-      return (Shift_Left (UInt16 (Hi), 8) and UInt16 (Lo));
+      return (Shift_Left (UInt16 (Hi), 8) or UInt16 (Lo));
    end Get_Word;
 
    -------------------
