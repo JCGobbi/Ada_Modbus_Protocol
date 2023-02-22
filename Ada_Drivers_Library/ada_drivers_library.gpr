@@ -7,6 +7,9 @@ library project Ada_Drivers_Library is
    type Build_Checks_Type is ("Disabled", "Enabled");
    Build_Checks : Build_Checks_Type := external ("ADL_BUILD_CHECKS", "Enabled");
 
+   --  Target architecture
+   Target := Project'Target;
+
    --  Callgraph info is not available on all architectures
    Callgraph_Switch := ();
    case Target is
@@ -58,7 +61,6 @@ library project Ada_Drivers_Library is
    for Library_Name use "ada_drivers_library";
 
    Linker_Switches := ();
-   for Target use "arm-eabi";
    for Runtime ("Ada") use "light-tasking-stm32f429disco";
 
    package Device_Configuration is
