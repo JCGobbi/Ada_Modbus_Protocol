@@ -1,3 +1,10 @@
+
+--  This test emits a frame that needs the disabling of the command
+--  MBus_Set_Checking of the Write_Frame procedure in the MBus_Functions.adb
+--  file, called in the MBus_Read_Discrete_Inputs bellow. That command
+--  calculates the CRC or LRC checking of the frame, and produces unknown
+--  results that the terminal don't understand.
+
 with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
 --  The "last chance handler" is the user-defined routine that is called when
 --  an exception is propagated. We need it in the executable, therefore it
@@ -89,11 +96,6 @@ begin
 
    Send_String ("Test terminal monitoring and modbus comunication in the same"
          & " terminal serial channel." & ASCII.CR & ASCII.LF);
-   --  This test emits a frame that needs the disabling of the command
-   --  MBus_Set_Checking of the Write_Frame procedure in the MBus_Functions.adb
-   --  file, called in the MBus_Read_Discrete_Inputs bellow. That command
-   --  calculates the CRC or LRC checking of the frame, and produces unknown
-   --  results that the terminal don't understand.
    Send_String ("The terminal will receive a modbus stream as responding to a"
          & " client request." & ASCII.CR & ASCII.LF);
 
@@ -118,9 +120,9 @@ begin
          if (Get_Content_At (Incoming, 1) = Character'Pos ('1')) then
             Send_String ("Option 1. Send a response to a Read_Discrete_Inputs with:"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
+            Send_String ("Server_Address = 07, Function_Code = 02, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("and Input_Status = (1F, 23, 47, 80)."
+            Send_String ("and Input_Status = (6A, 23, 47, 80)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, RTU);
@@ -136,8 +138,8 @@ begin
             declare
                PosAddr  : constant UInt8 := Get_ASCII_Pos (16#07#); -- character 7
                PosCnt   : constant UInt16 := 16#4243#; -- characters B and C
-               PosInput : constant UInt8_Array :=
-                 (Get_ASCII_Pos (16#01#), Get_ASCII_Pos (16#0F#),
+               PosInput : constant UInt8_Array (1 .. 10) :=
+                 (Get_ASCII_Pos (16#06#), Get_ASCII_Pos (16#0A#),
                   Get_ASCII_Pos (16#02#), Get_ASCII_Pos (16#03#),
                   Get_ASCII_Pos (16#04#), Get_ASCII_Pos (16#07#),
                   Get_ASCII_Pos (16#08#), Get_ASCII_Pos (16#00#),
@@ -151,9 +153,9 @@ begin
          elsif (Get_Content_At (Incoming, 1) = Character'Pos ('2')) then
             Send_String ("Option 2. Send a response to a Read_Discrete_Inputs with:"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("Server_Address = 07, Function_Code = 0F, Byte_Count = BC"
+            Send_String ("Server_Address = 07, Function_Code = 02, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("and Input_Status = (1F, 23, 47, 80)."
+            Send_String ("and Input_Status = (6A, 23, 47, 80)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, ASC);
@@ -169,7 +171,8 @@ begin
             declare
                PosAddr  : constant UInt8 := 16#07#;
                PosByte  : constant UInt16 := 16#0B0C#; -- characters B and C
-               PosInput : constant UInt8_Array := (16#1F#, 16#23#, 16#47#, 16#80#);
+               PosInput : constant UInt8_Array (1 .. 4) :=
+                 (16#6A#, 16#23#, 16#47#, 16#80#);
             begin
                MBus_Read_Discrete_Inputs (Address      => PosAddr,
                                           Byte_Count   => PosByte,

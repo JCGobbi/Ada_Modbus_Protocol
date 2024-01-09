@@ -6,7 +6,7 @@ package Peripherals_Blocking is
 
    --  This specific USART is in the programming USB.
    --  It is used for monitoring the modbus communication.
-   Term_Peripheral : aliased Serial_IO.Peripheral_Descriptor :=
+   Term_Peripheral : aliased Peripheral_Descriptor :=
                   (Transceiver    => USART_3'Access,
                    Transceiver_AF => GPIO_AF_USART3_7,
                    Tx_Pin         => PD8,
@@ -15,7 +15,7 @@ package Peripherals_Blocking is
    Term_COM : Blocking.Serial_Port (Term_Peripheral'Access);
 
    --  This USART is used for modbus protocol.
-   MBus_Peripheral : aliased Serial_IO.Peripheral_Descriptor :=
+   MBus_Peripheral : aliased Peripheral_Descriptor :=
                   (Transceiver    => USART_6'Access,
                    Transceiver_AF => GPIO_AF_USART6_8,
                    Tx_Pin         => PG14,

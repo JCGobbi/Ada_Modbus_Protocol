@@ -13,15 +13,18 @@ package MBus_Functions is
    --------------------------------------
 
    --  The input and output operating modes RTU, ASCII and TCP are already set up
-   --  at MBus.ads with default mode RTU.
+   --  at message_buffers.ads with default mode RTU.
    --  The input and output operating modes MBus_RTU, MBus_ASCII and Terminal for
-   --  the modbus serial port are already set up at Serial_IO.ads with default
-   --  mode MBus_RTU.
+   --  the modbus serial port are already set up at serial_io-blocking.ads with
+   --  default mode MBus_RTU.
    --  Both configurations can be changed at any time with the sets bellow:
 
-   --  MBus_Mode   : RTU; -- for MBus_Set_Mode at mbus.ads
-   --  Serial_Mode : MBus_RTU; -- for Set_Serial_Mode at serial_io.ads
+   --  MBus_Set_Mode change Message.MBus_Message_Mode at message_buffers.ads
+   --  Set_Serial_Mode change Serial_Port.Serial_Mode at serial_io-blocking.ads
 
+   --  MBus routines use internally a defined serial port to send and receive
+   --  messages, so it is necessary to define a common serial port for all of
+   --  them.
    MBus_Port : Serial_Port renames MBus_COM;
 
    -----------------------------------------
