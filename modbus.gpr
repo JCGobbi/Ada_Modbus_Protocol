@@ -11,7 +11,9 @@ project Modbus extends "Ada_Drivers_Library/repo/examples/shared/common/common.g
    --  serial/demo_string_blocking.adb,
    --  modbus/demo_term_blocking.adb,
    --  modbus/demo_mbus_blocking.adb.
-   for Main use ("demo_mbus_blocking.adb");
+   for Main use ("demo_string_blocking.adb",
+                 "demo_term_blocking.adb",
+                 "demo_mbus_blocking.adb");
 
    for Object_Dir use "obj";
    for Exec_Dir use "exec";
