@@ -151,23 +151,24 @@ package body MBus_Functions is
       if not MBus_Has_Error (Msg, Invalid_Address) xor
          not MBus_Has_Error (Msg, Invalid_Function_Code)
       then
-
          --  Test if data is not empty
          case MBus_Get_Mode (Msg) is
             when RTU =>
                if Get_Length (Msg) > 4 then
                   --  The buffer has 1 address + 1 function + data + 2 CRC bytes.
-                  --  MBus_Get_Data_At takes a byte starting at 5th position of buffer.
-                  for i in 1 .. (Get_Length (Msg) - 6) loop
-                     Data_Chain (i) := Get_Content_At (Msg, i + 4);
+                  --  MBus_Get_Data_At takes a byte starting at 3rd position of
+                  --  buffer.
+                  for i in 1 .. (Get_Length (Msg) - 4) loop
+                     Data_Chain (i) := Get_Content_At (Msg, i + 2);
                   end loop;
                end if;
             when ASC =>
                if Get_Length (Msg) > 9 then
-                  --  The buffer has 1 start + 2 address + 2 function + data + 2 LRC + 2 end chars.
-                  --  Data has an even number of chars.
-                  --  MBus_Get_Data_At takes a pair of chars starting at 6th position of buffer.
-                  for i in 1 .. ((Get_Length (Msg) - 11) / 2) loop
+                  --  The buffer has 1 start + 2 address + 2 function + data +
+                  --  2 LRC + 2 end chars. Data has an even number of chars.
+                  --  MBus_Get_Data_At takes a pair of chars starting at 6th
+                  --  position of buffer.
+                  for i in 1 .. ((Get_Length (Msg) - 9) / 2) loop
                      Data_Chain (i) := MBus_Get_Data_At (Msg, i + 2);
                   end loop;
                end if;
