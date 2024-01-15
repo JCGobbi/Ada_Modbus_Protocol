@@ -32,9 +32,9 @@ package MBus_Frame is
 
    procedure MBus_Append_Data (This : in out Message;  To : UInt8) with
      Post => (if MBus_Get_Mode (This) = RTU then
-              MBus_Get_Data_At (This, Get_Length (This)) = To) or
-             (if MBus_Get_Mode (This) = ASC then
-               MBus_Get_Data_At (This, Get_Length (This) - 1) = To);
+                 MBus_Get_Data_At (This, Get_Length (This)) = To
+              elsif MBus_Get_Mode (This) = ASC then
+                 MBus_Get_Data_At (This, Get_Length (This) - 1) = To);
    --  Put the next byte with modbus data value for RTU.
    --  Put the next two chars with modbus data value for ASCII.
 
