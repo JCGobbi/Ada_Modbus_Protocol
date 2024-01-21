@@ -1,9 +1,20 @@
+--  This test waits the receiving of a frame in the modbus serial channel,
+--  so you will need a modbus client connected to MBus_COM port.
+--  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
+--  serial channel are defined at Serial_IO.ads. This mode only affects the
+--  reception of data choosing the end of frame mode in the Receive procedure
+--  at Serial_IO.Port.
+
 with Last_Chance_Handler;  pragma Unreferenced (Last_Chance_Handler);
 --  The "last chance handler" is the user-defined routine that is called when
 --  an exception is propagated. We need it in the executable, therefore it
 --  must be somewhere in the closure of the context clauses.
 
 with MBus_Task; pragma Unreferenced (MBus_Task);
+--  The MBus_Task package contains the task that actually controls the reception
+--  app so although it is not referenced directly in the main procedure, we need
+--  it in the closure of the context clauses so that it will be included in the
+--  executable.
 
 with Ada.Real_Time;         use Ada.Real_Time;
 with HAL;                   use HAL;
@@ -12,7 +23,6 @@ with STM32.USARTs;          use STM32.USARTs;
 with Peripherals_Blocking;  use Peripherals_Blocking;
 with Serial_IO.Blocking;    use Serial_IO.Blocking, Serial_IO;
 with Message_Buffers;       use Message_Buffers;
-
 with MBus;                  use MBus;
 with MBus_Frame.IO;         use MBus_Frame.IO, MBus_Frame;
 
@@ -32,10 +42,9 @@ procedure Demo_MBus_Blocking is
    -- The serial channel for MODBUS comunication --
    ------------------------------------------------
 
-   --  For testing purposes, we may use the modbus protocol with each one
-   --  of the two serial channels MBus_COM or Term_COM, setting it up inside
-   --  MBus_Functions.ads:
-   --  MBus_Port : Serial_Port renames Term_COM;
+   --  For testing purposes, we may use the modbus protocol functions with each
+   --  one of the two serial channels MBus_COM or Term_COM, setting it up inside
+   --  Peripherals.ads: "MBus_Port : Serial_Port renames Term_COM;".
 
    -----------------------------------------
    -- Buffers for Terminal Serial Channel --
@@ -46,56 +55,46 @@ procedure Demo_MBus_Blocking is
 
    --  Defines the address of the server.
    Server_Address : constant MBus_Server_Address := 16#0A#;
-   --  Set Function_Code
-   Function_Code : constant MBus_Normal_Function_Code := 16#01#;
+   --  Defines function code
+   Function_Code : constant MBus_Normal_Function_Code := Read_Discrete_Inputs;
 
    ------------------------------
    -- Procedures and functions --
    ------------------------------
 
    procedure Send_String (This : String);
-   --  Translate a string into a sequence of ASCII addresses and send the frame.
+   --  Receives a string of characters and put the character addresses into an
+   --  UInt8 array. Then put this array into a Message buffer taking into
+   --  account the buffer'flags of transmission/reception complete and send the
+   --  frame to the Term_COM serial port.
 
    procedure Send_String (This : String) is
-      Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
-         Pos := Character'Pos (This (i));
-         CharPos (i) := Pos;
+         CharPos (i) := Character'Pos (This (i));
       end loop;
-      Await_Transmission_Complete (Term_Outgoing); -- outgoing buffer
+      Await_Transmission_Complete (Term_Outgoing);
       Set_Content (Term_Outgoing, To => CharPos);
-      Signal_Reception_Complete (Term_Outgoing); -- outgoing buffer
-      Await_Reception_Complete (Term_Outgoing); -- outgoing buffer
-      Send (Term_COM, Term_Outgoing'Unchecked_Access);
-      --  No need to wait for it here because the Put won't return until the
-      --  message has been sent.
-      Signal_Transmission_Complete (Term_Outgoing); -- outgoing buffer
+      Signal_Reception_Complete (Term_Outgoing);
+      Send_Frame (Term_COM, Term_Outgoing);
    end Send_String;
 
 begin
-   --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
-   --  serial channel are defined at Serial_IO.ads. This mode only affects the
-   --  reception of data choosing the end of frame mode in the Get procedure at
-   --  Serial_IO.Blocking.
-
    --  Configuration for Terminal console
    Initialize (Term_COM);
    Configure (Term_COM, Baud_Rate => Term_Bps, Parity => No_Parity);
    Set_Serial_Mode (Term_COM, Terminal);
+   Configure_Timeout (Term_COM, MB_Bps => Term_Bps);
 
-   --  Configuration for modbus communication
+   --  Configuration for modbus communication.
    Initialize (MBus_COM);
    Configure (MBus_COM, Baud_Rate => MBus_Bps, Parity => Even_Parity);
    Configure_Timeout (MBus_COM, MB_Bps => MBus_Bps);
 
-   --  Start with both incoming and outgoing buffers empty,
-   --  so there is no need to wait.
-   Signal_Transmission_Complete (Term_Outgoing); -- outgoing buffer
-   Signal_Transmission_Complete (Term_Incoming); -- incoming buffer
-
-   Signal_Transmission_Complete (Outgoing); -- outgoing buffer
+   --  Start with buffers empty, so there is no need to wait.
+   Signal_Transmission_Complete (Term_Outgoing);
+   Signal_Transmission_Complete (Outgoing);
 
    Set_Terminator (Term_Incoming, To => ASCII.CR);
 
@@ -109,14 +108,15 @@ begin
       Send_String ("1 - Modbus RTU." & ASCII.CR & ASCII.LF);
       Send_String ("2 - Modbus ASCII." & ASCII.CR & ASCII.LF);
 
-      Signal_Transmission_Complete (Term_Incoming); -- incoming buffer
+      Signal_Transmission_Complete (Term_Incoming);
       Receive_Frame (Term_COM, Term_Incoming);
+
+      Await_Reception_Complete (Term_Incoming);
+
       if Term_Incoming.MBus_Has_Error (Response_Timed_Out) then
          Send_String ("Terminal response timed out, please reset the board."
            & ASCII.CR & ASCII.LF & ASCII.CR & ASCII.LF);
       end if;
-
-      Await_Reception_Complete (Term_Incoming); -- incoming buffer
 
       if (Get_Content_At (Term_Incoming, 1) = Character'Pos (Term_Incoming.Get_Terminator))
           or ((Get_Content_At (Term_Incoming, 1) /= Character'Pos ('1'))
@@ -149,7 +149,10 @@ begin
                & ASCII.CR & ASCII.LF);
          Signal_Transmission_Complete (Incoming); -- incoming buffer
          --  Here the MBus_Task receives the autorization to receive the modbus
-         --  frame, because the Receive_Frame task waits for this signal.
+         --  frame, because the Receive_Frame task waits for this signal. When
+         --  it gets inter-frame or response timeout, the task ends receiving,
+         --  then a new task cycle is started until it gets the first byte of
+         --  a frame.
 
          --  Send the modbus frame
          declare
@@ -240,14 +243,14 @@ begin
                Send_String ("InterFrame timed out. ");
             end if;
             if Incoming.MBus_Has_Error (Response_Timed_Out) then
-               Send_String ("Response timed out.");
+               Send_String ("Response timed out." & ASCII.CR & ASCII.LF);
             end if;
          end if;
          MBus_Clear_Errors (Incoming);
          MBus_Clear_Errors (Term_Incoming);
-         Send_String (ASCII.CR & ASCII.LF & "Wait for a new cycle."
+         Send_String ("Wait for a new cycle."
            & ASCII.CR & ASCII.LF & ASCII.CR & ASCII.LF);
-         delay until Clock + Seconds (5);
+         delay until Clock + Seconds (3);
       end if;
    end loop;
 
