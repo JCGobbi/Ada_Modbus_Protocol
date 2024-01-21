@@ -63,6 +63,10 @@ package Serial_IO.Blocking is
       To : Time_Span := Time_Span_Last)
      with Inline;
 
+   procedure Configure_Timeout (This   : in out Serial_Port;
+                                MB_Bps : Baud_Rates);
+   --  Configure the timeouts for interchar, interframe and response.
+
    --  This procedure was modified for MODBUS
    procedure Send (This : in out Serial_Port; Msg : not null access Message)
      with Pre => (Initialized (This) or else raise Serial_Port_Uninitialized);
@@ -76,6 +80,11 @@ package Serial_IO.Blocking is
    --  Callers wait until all characters are received.
 
 private
+
+   function Inter_Time (Bps : Baud_Rates; Inter_Char : Natural) return Time_Span;
+   --  Inter_Char is the number of characters in x10 parts.
+   --  Maximum inter-character time is 1.5 char time, so Inter_Char is 15.
+   --  Minimum inter-frame time is 3.5 char time, so Inter_Char is 35.
 
    type Serial_Port (Device : access Peripheral_Descriptor) is
       tagged limited record

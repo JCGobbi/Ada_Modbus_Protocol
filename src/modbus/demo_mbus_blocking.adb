@@ -14,8 +14,7 @@ with Serial_IO.Blocking;    use Serial_IO.Blocking, Serial_IO;
 with Message_Buffers;       use Message_Buffers;
 
 with MBus;                  use MBus;
-with MBus_Frame.IO;         use MBus_Frame.IO;
-with MBus_Frame.Errors;     use MBus_Frame.Errors, MBus_Frame;
+with MBus_Frame.IO;         use MBus_Frame.IO, MBus_Frame;
 
 with MBus_Functions.Server; use MBus_Functions.Server, MBus_Functions;
 
@@ -45,7 +44,8 @@ procedure Demo_MBus_Blocking is
    Term_Incoming : aliased Message (Physical_Size => 1024);  -- arbitrary size
    Term_Outgoing : aliased Message (Physical_Size => 1024);  -- arbitrary size
 
-
+   --  Defines the address of the server.
+   Server_Address : constant MBus_Server_Address := 16#0A#;
    --  Set Function_Code
    Function_Code : constant MBus_Normal_Function_Code := 16#01#;
 
@@ -86,16 +86,9 @@ begin
    Set_Serial_Mode (Term_COM, Terminal);
 
    --  Configuration for modbus communication
-   --  The Server_Address is a global variable defined at MBus.ads. Here we
-   --  superpose the default address 1.
-   MBus_Initialize (MB_Mode    => RTU,
-                    MB_Address => 1,
-                    MB_Port    => MBus_COM,
-                    MB_Bps     => MBus_Bps,
-                    MB_Parity  => Even_Parity);
-
-   --  Set Server_Address
-   Server_Address := 16#0A#;
+   Initialize (MBus_COM);
+   Configure (MBus_COM, Baud_Rate => MBus_Bps, Parity => Even_Parity);
+   Configure_Timeout (MBus_COM, MB_Bps => MBus_Bps);
 
    --  Start with both incoming and outgoing buffers empty,
    --  so there is no need to wait.
@@ -106,12 +99,9 @@ begin
 
    Set_Terminator (Term_Incoming, To => ASCII.CR);
 
-   Send_String ("Test terminal monitoring and modbus comunication in different"
-     & " serial channels." & ASCII.CR & ASCII.LF);
-   --  This test waits the receiving of a frame in the modbus serial channel,
-   --  so you will need a modbus client connected to MBus_COM port.
-   Send_String ("The terminal will only monitor the receipt of a modbus stream as"
-     & " responding to a client request." & ASCII.CR & ASCII.LF);
+   Send_String (ASCII.FF & "Test terminal and modbus comunications in different"
+     & " serial channels. The terminal will only monitor the receipt of a modbus"
+     & " stream as responding to a client request." & ASCII.LF & ASCII.CR);
 
    loop
       Send_String ("Choose the number that corresponds to a modbus RTU or"
@@ -122,8 +112,8 @@ begin
       Signal_Transmission_Complete (Term_Incoming); -- incoming buffer
       Receive_Frame (Term_COM, Term_Incoming);
       if Term_Incoming.MBus_Has_Error (Response_Timed_Out) then
-         Send_String ("No valid option, please reset the board."
-           & ASCII.CR & ASCII.LF);
+         Send_String ("Terminal response timed out, please reset the board."
+           & ASCII.CR & ASCII.LF & ASCII.CR & ASCII.LF);
       end if;
 
       Await_Reception_Complete (Term_Incoming); -- incoming buffer
@@ -132,7 +122,8 @@ begin
           or ((Get_Content_At (Term_Incoming, 1) /= Character'Pos ('1'))
           and (Get_Content_At (Term_Incoming, 1) /= Character'Pos ('2')))
       then
-         Send_String ("No valid option, please try again." & ASCII.CR & ASCII.LF);
+         Send_String ("No valid option, please try again."
+                      & ASCII.CR & ASCII.LF & ASCII.CR & ASCII.LF);
       else
          if Get_Content_At (Term_Incoming, 1) = Character'Pos ('1') then
             Send_String ("Option 1 - Modbus RTU protocol." & ASCII.CR & ASCII.LF);
@@ -162,12 +153,11 @@ begin
 
          --  Send the modbus frame
          declare
-            PosAddr  : constant UInt8 := 16#0A#;
             PosCnt   : constant UInt16 := 16#0008#;
-            PosInput : constant UInt8_Array := (16#34#, 16#AF#, 16#C2#, 16#93#,
-                                                16#54#, 16#67#, 16#B8#, 16#E0#);
+            PosInput : constant UInt8_Array (1 .. 8) :=
+              (16#34#, 16#AF#, 16#C2#, 16#93#, 16#54#, 16#67#, 16#B8#, 16#E0#);
          begin
-            MBus_Read_Discrete_Inputs (Address       => PosAddr,
+            MBus_Read_Discrete_Inputs (Address       => Server_Address,
                                        Byte_Count    => PosCnt,
                                        Input_Status  => PosInput);
          end;
@@ -241,9 +231,6 @@ begin
                            Server_Address => Server_Address,
                            Function_Code  => Function_Code,
                            Data_Chain     => Chain);
-               Process_Error_Status (Incoming,
-                                     Server_Address => Server_Address,
-                                     Function_Code  => Function_Code);
             end;
          else
             if Incoming.MBus_Has_Error (InterChar_Timed_Out) then
@@ -255,12 +242,12 @@ begin
             if Incoming.MBus_Has_Error (Response_Timed_Out) then
                Send_String ("Response timed out.");
             end if;
-            Send_String (ASCII.CR & ASCII.LF & "Wait for a new cycle."
-              & ASCII.CR & ASCII.LF);
          end if;
          MBus_Clear_Errors (Incoming);
-         delay until Clock + Seconds (5); -- Wait 5.0 seconds before receive the next frame
-
+         MBus_Clear_Errors (Term_Incoming);
+         Send_String (ASCII.CR & ASCII.LF & "Wait for a new cycle."
+           & ASCII.CR & ASCII.LF & ASCII.CR & ASCII.LF);
+         delay until Clock + Seconds (5);
       end if;
    end loop;
 

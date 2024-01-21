@@ -83,6 +83,74 @@ package body Serial_IO.Blocking is
       This.Response_Timeout := To;
    end Set_Response_Timeout;
 
+   -------------------------------
+   -- MODBUS RTU Implementation --
+   -------------------------------
+
+   --  The implementation of RTU reception driver may imply the management of a
+   --  lot of interruptions due to the t1.5 and t3.5 timers. With high
+   --  communication baud rates, this leads to a heavy CPU load. Consequently
+   --  these two timers must be strictly respected when the baud rate is equal
+   --  or lower than 19200 Bps.
+
+   --  For baud rates greater than 19200 Bps, fixed values for the 2 timers
+   --  should be used: it is recommended to use a value of 750µs for the
+   --  inter-character time-out (t1.5) and a value of 1.750ms for inter-frame
+   --  delay (t3.5). Both values are calculated at 22000 Bps.
+
+   --  Standard baud rates in bps are: 300, 600, 1200, 2400, 4800, 9600, 14400,
+   --  19200, 38400, 57600, 115200, 230400, 460800.
+
+   --  RTU protocol demands 11 bits per character.
+
+   --  Max inter-character time between character at 9600 Bps is:
+   --  1.5 * 11 bits per character / 9600 Bps = 1.71875 ms.
+
+   --  Min inter-frame time between frames at 9600 Bps is:
+   --  3.5 * 11 bits per character / 9600 Bps = 4.0104 ms.
+
+   ----------------
+   -- Inter_Time --
+   ----------------
+
+   function Inter_Time (Bps        : Baud_Rates;
+                        Inter_Char : Natural) return Time_Span
+   is
+   begin
+      if Bps <= 19_200 then
+         return Microseconds ((10**5 * Inter_Char * 11) / Integer (Bps));
+      else
+         --  With bps > 19200, fixed time of 750 us for inter-character with
+         --  Inter_Char = 15, and fixed time of 1750 us for inter-frame with
+         --  Inter_Char = 35.
+         return Microseconds ((10**5 * Inter_Char * 11) / 22_000);
+      end if;
+   end Inter_Time;
+
+   -----------------------
+   -- Configure_Timeout --
+   -----------------------
+
+   procedure Configure_Timeout (This   : in out Serial_Port;
+                                MB_Bps : Baud_Rates)
+   is
+      Timeout  : Time_Span;
+   begin
+      --  Set the timeout for maximum inter-character time for modbus RTU operation.
+      Timeout := Inter_Time (Bps => MB_Bps, Inter_Char => 15);
+      Set_InterChar_Timeout (This, Timeout);
+
+      --  Set the timeout for minimum inter-frame time for modbus RTU operation.
+      --  This time must consider the inter-character elapsed time above.
+      Timeout := Inter_Time (Bps => MB_Bps, Inter_Char => 20);
+      Set_InterFrame_Timeout (This, Timeout);
+
+      --  Set the timeout for response time for modbus RTU and ASCII operation.
+      Timeout := Milliseconds (2_000);
+      Set_Response_Timeout (This, Timeout);
+
+   end Configure_Timeout;
+
    ----------
    -- Send --
    ----------

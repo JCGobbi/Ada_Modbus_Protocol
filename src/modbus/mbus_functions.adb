@@ -1,69 +1,7 @@
-with Ada.Real_Time;     use Ada.Real_Time;
-
-with Serial_IO;         use Serial_IO;
-with MBus_Frame.IO;     use MBus_Frame.IO;
-with MBus_Frame.Errors; use MBus_Frame.Errors;
-                        use MBus_Frame;
+with MBus_Frame.Errors; use MBus_Frame.Errors, MBus_Frame;
 with Checking;          use Checking;
 
 package body MBus_Functions is
-
-   ---------------------
-   -- MBus_Initialize --
-   ---------------------
-
-   procedure MBus_Initialize (MB_Mode    : MBus_Modes;
-                              MB_Address : MBus_Server_Address;
-                              MB_Port    : in out Serial_Port;
-                              MB_Bps     : Baud_Rates;
-                              MB_Parity  : Parities)
-   is
-      Max_Char_Timeout  : Time_Span;
-      Min_Frame_Timeout : Time_Span;
-      Response_Timeout  : Time_Span;
-   begin
-      --  The modbus protocol RTU, ASCII and TCP modes of operation are defined
-      --  at MBus.ads. This mode may be changed at any time attending client
-      --  solicitations configuring the buffer operation mode.
-      MBus_Set_Mode (Outgoing, MB_Mode);
-      MBus_Set_Mode (Incoming, MB_Mode);
-
-      --  The Server_Address is a global variable defined at MBus.ads.
-      Server_Address := MB_Address;
-
-      --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
-      --  serial channel are defined at Serial_IO.ads. This mode only affects the
-      --  reception of data choosing the end of frame mode in the Get procedure at
-      --  Serial_IO.Blocking.
-      --  Serial for Modbus protocol
-      Initialize (MB_Port);
-      Configure (MB_Port,
-                 Baud_Rate => MB_Bps,
-                 Parity    => MB_Parity);
-
-      case MB_Mode is
-         when RTU =>
-            Set_Serial_Mode (MB_Port, MBus_RTU);
-         when ASC =>
-            Set_Serial_Mode (MB_Port, MBus_ASCII);
-         when TCP =>
-            null;
-      end case;
-
-      --  Set the timeout for maximum inter-character time for modbus RTU operation.
-      Max_Char_Timeout := Inter_Time (Bps => MB_Bps, Inter_Char => 15);
-      Set_InterChar_Timeout (MB_Port, Max_Char_Timeout);
-
-      --  Set the timeout for minimum inter-frame time for modbus RTU operation.
-      --  This time must consider the inter-character elapsed time above.
-      Min_Frame_Timeout := Inter_Time (Bps => MB_Bps, Inter_Char => 20);
-      Set_InterFrame_Timeout (MB_Port, Min_Frame_Timeout);
-
-      --  Set the timeout for response time for modbus RTU and ASCII operation.
-      Response_Timeout := Milliseconds (2_000);
-      Set_Response_Timeout (MB_Port, Response_Timeout);
-
-   end MBus_Initialize;
 
    -----------------
    -- Write_Frame --
@@ -111,25 +49,6 @@ package body MBus_Functions is
       Signal_Reception_Complete (Msg); -- modbus outgoing buffer
 
    end Write_Frame;
-
-   ---------------------
-   -- WriteSend_Frame --
-   ---------------------
-
-   procedure WriteSend_Frame (Msg            : in out Message;
-                              Server_Address : MBus_Server_Address;
-                              Function_Code  : UInt8;
-                              Data_Chain     : UInt8_Array)
-   is
-   begin
-      --  Save data from the Data_Chain array to the MBus_Outcoming buffer.
-      Write_Frame (Msg, Server_Address, Function_Code, Data_Chain);
-
-      --  Send the frame from the MBus_Outcoming buffer to the Serial_Outcoming buffer,
-      --  and to serial channel.
-      Send_Frame (This => MBus_Port, Msg => Msg);
-
-   end WriteSend_Frame;
 
    ----------------
    -- Read_Frame --
@@ -183,24 +102,5 @@ package body MBus_Functions is
       Signal_Transmission_Complete (Msg); -- incoming buffer
 
    end Read_Frame;
-
-   -----------------------
-   -- ReadReceive_Frame --
-   -----------------------
-
-   procedure ReadReceive_Frame (Msg            : in out Message;
-                                Server_Address : MBus_Server_Address;
-                                Function_Code  : UInt8;
-                                Data_Chain     : in out UInt8_Array)
-   is
-   begin
-      --  Get the Serial_Incoming buffer from the serial channel to the
-      --  MBus_Incoming buffer.
-      Receive_Frame (This => MBus_Port, Msg => Msg);
-
-      --  Save data from the MBus_Incoming buffer to the Data_Chain array.
-      Read_Frame (Msg, Server_Address, Function_Code, Data_Chain);
-
-   end ReadReceive_Frame;
 
 end MBus_Functions;

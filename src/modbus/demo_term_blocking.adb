@@ -25,20 +25,19 @@ with MBus_Functions.Server; use MBus_Functions.Server, MBus_Functions;
 procedure Demo_Term_Blocking is
 
    ------------------------------------------------
-   -- Baud rates for MODBUS and terminal console --
-   ------------------------------------------------
-
-   MBus_Bps : constant Baud_Rates := 9_600;
-   Term_Bps : constant Baud_Rates := 115_200;
-
-   ------------------------------------------------
    -- The serial channel for MODBUS comunication --
    ------------------------------------------------
 
    --  For testing purposes, we may use the modbus protocol with each one
-   --  of the two serial channels MBus_COM or Term_COM, setting it up inside
-   --  MBus_Functions.ads:
-   --  MBus_Port : Serial_Port renames Term_COM;
+   --  of the two serial channels MBus_COM or Term_COM. This program uses the
+   --  Term_COM terminal to get the messages in the host terminal console, so we
+   --  must change the MBus_Port to "MBus_Port : Serial_Port renames Term_COM;"
+   --  at MBus_Functions.ads because the MODBUS functions use the MBus_Port;
+
+   Term_Bps : constant Baud_Rates := 115_200;
+   --  MBus_Bps : constant Baud_Rates := 9_600;
+   --  Defines the address of the server.
+   Server_Address : constant MBus_Server_Address := 16#07#;
 
    ------------------------------
    -- Procedures and functions --
@@ -77,14 +76,10 @@ begin
    Configure (Term_COM, Baud_Rate => Term_Bps, Parity => No_Parity);
    Set_Serial_Mode (Term_COM, Terminal);
 
-   --  Configuration for modbus communication
-   --  The Server_Address is a global variable defined at MBus.ads. Here we
-   --  superpose the default address 1.
-   MBus_Initialize (MB_Mode    => RTU,
-                    MB_Address => 1,
-                    MB_Port    => MBus_COM,
-                    MB_Bps     => MBus_Bps,
-                    MB_Parity  => Even_Parity);
+   --  Configuration for modbus
+   --  Initialize (MBus_COM);
+   --  Configure (MBus_COM, Baud_Rate => MBus_Bps, Parity => Even_Parity);
+   --  Set_Serial_Mode (MBus_COM, MBus_RTU);
 
    --  Start with outgoing buffer empty, so there is no need to wait.
    Signal_Transmission_Complete (Outgoing); -- outgoing buffer
@@ -94,10 +89,9 @@ begin
 
    Set_Terminator (Incoming, To => ASCII.CR);
 
-   Send_String ("Test terminal monitoring and modbus comunication in the same"
-         & " terminal serial channel." & ASCII.CR & ASCII.LF);
-   Send_String ("The terminal will receive a modbus stream as responding to a"
-         & " client request." & ASCII.CR & ASCII.LF);
+   Send_String (ASCII.FF & "Test terminal monitoring and modbus comunication in"
+         & " the same terminal serial channel. The terminal will receive a"
+         & " modbus stream as responding to a client request." & ASCII.CR & ASCII.LF);
 
    loop
       Set_Serial_Mode (Term_COM, Terminal);
@@ -122,12 +116,10 @@ begin
                    & ASCII.CR & ASCII.LF);
             Send_String ("Server_Address = 07, Function_Code = 02, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("and Input_Status = (6A, 23, 47, 80)."
+            Send_String ("and Input_Status = (16#9F#, 16#63#, 16#47#, 16#81#, 16#CB#)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, RTU);
-            --  We are using terminal serial channel
-            --  Set_Serial_Mode (Term_COM, Terminal);
 
             --  Send a response to a Read_Discrete_Inputs with
             --  Server_Address = 16#07#, Function_Code = 16#0F#,
@@ -136,50 +128,49 @@ begin
             --  It is necessary to put the LF CR character to use
             --  Serial_Mode as Terminal.
             declare
-               PosAddr  : constant UInt8 := Get_ASCII_Pos (16#07#); -- character 7
+               PosAddr  : constant UInt8 := Get_ASCII_Pos (Server_Address); -- character 7
                PosCnt   : constant UInt16 := 16#4243#; -- characters B and C
                PosInput : constant UInt8_Array (1 .. 10) :=
-                 (Get_ASCII_Pos (16#06#), Get_ASCII_Pos (16#0A#),
-                  Get_ASCII_Pos (16#02#), Get_ASCII_Pos (16#03#),
+                 (Get_ASCII_Pos (16#09#), Get_ASCII_Pos (16#0F#),
+                  Get_ASCII_Pos (16#06#), Get_ASCII_Pos (16#03#),
                   Get_ASCII_Pos (16#04#), Get_ASCII_Pos (16#07#),
-                  Get_ASCII_Pos (16#08#), Get_ASCII_Pos (16#00#),
-                  16#0A#, 16#0D#); -- characters LF and CR
+                  Get_ASCII_Pos (16#08#), Get_ASCII_Pos (16#01#),
+                  Get_ASCII_Pos (16#0C#), Get_ASCII_Pos (16#0B#));
             begin
                MBus_Read_Discrete_Inputs (Address       => PosAddr,
                                           Byte_Count    => PosCnt,
                                           Input_Status  => PosInput);
             end;
+            Send_String ("" & ASCII.CR & ASCII.LF);
 
          elsif (Get_Content_At (Incoming, 1) = Character'Pos ('2')) then
             Send_String ("Option 2. Send a response to a Read_Discrete_Inputs with:"
                    & ASCII.CR & ASCII.LF);
             Send_String ("Server_Address = 07, Function_Code = 02, Byte_Count = BC"
                    & ASCII.CR & ASCII.LF);
-            Send_String ("and Input_Status = (6A, 23, 47, 80)."
+            Send_String ("and Input_Status = (16#1F#, 16#23#, 16#47#, 16#80#, 16#6C#)."
                    & ASCII.CR & ASCII.LF);
 
             MBus_Set_Mode (Outgoing, ASC);
-            --  We are using terminal serial channel
-            Set_Serial_Mode (Term_COM, MBus_ASCII);
 
             --  Send a response to a Read_Discrete_Inputs with
             --  Server_Address = 16#07#, Function_Code = 16#0F#,
             --  Byte_Count = 16#0B0C# and
-            --  Input_Status = (16#1F#, 16#23#, 16#47#, 16#80#).
+            --  Input_Status = (16#1F#, 16#23#, 16#47#, 16#80#, 16#6C#).
             --  It is necessary to put the LF CR characters to use
             --  Serial_Mode as Terminal.
             declare
-               PosAddr  : constant UInt8 := 16#07#;
                PosByte  : constant UInt16 := 16#0B0C#; -- characters B and C
-               PosInput : constant UInt8_Array (1 .. 4) :=
-                 (16#6A#, 16#23#, 16#47#, 16#80#);
+               PosInput : constant UInt8_Array (1 .. 5) :=
+                 (16#1F#, 16#23#, 16#47#, 16#80#, 16#6C#);
             begin
-               MBus_Read_Discrete_Inputs (Address      => PosAddr,
+               MBus_Read_Discrete_Inputs (Address      => Server_Address,
                                           Byte_Count   => PosByte,
                                           Input_Status => PosInput);
             end;
          end if;
       end if;
+      Send_String ("" & ASCII.CR & ASCII.LF);
    end loop;
 
 end Demo_Term_Blocking;

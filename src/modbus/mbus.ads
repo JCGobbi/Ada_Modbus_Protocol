@@ -15,9 +15,6 @@ package MBus is
    --  Valid Modbus server addresses in unicast mode: 1 .. 247
    --  Valid Modbus server address in broadcast mode: 0
 
-   Server_Address : MBus_Server_Address := 1;
-   --  Variable used for server address
-
    subtype MBus_RTU_Data_Size is Natural range 0 .. 252;
    --  Max Data size for RTU Message Frame
 

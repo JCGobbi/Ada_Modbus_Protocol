@@ -1,5 +1,4 @@
 with HAL;                  use HAL;
-with STM32.USARTs;         use STM32.USARTs;
 
 with Peripherals_Blocking; use Peripherals_Blocking;
 with Serial_IO.Blocking;   use Serial_IO.Blocking;
@@ -49,30 +48,14 @@ package MBus_Functions is
    -- Procedures and functions --
    ------------------------------
 
-   procedure MBus_Initialize (MB_Mode    : MBus_Modes;
-                              MB_Address : MBus_Server_Address;
-                              MB_Port    : in out Serial_Port;
-                              MB_Bps     : Baud_Rates;
-                              MB_Parity  : Parities);
-
    procedure Write_Frame (Msg            : in out Message;
                           Server_Address : MBus_Server_Address;
                           Function_Code  : UInt8;
                           Data_Chain     : UInt8_Array);
 
-   procedure WriteSend_Frame (Msg            : in out Message;
-                              Server_Address : MBus_Server_Address;
-                              Function_Code  : UInt8;
-                              Data_Chain     : UInt8_Array);
-
    procedure Read_Frame (Msg           : in out Message;
                          Server_Address : MBus_Server_Address;
                          Function_Code : UInt8;
                          Data_Chain    : in out UInt8_Array);
-
-   procedure ReadReceive_Frame (Msg            : in out Message;
-                                Server_Address : MBus_Server_Address;
-                                Function_Code  : UInt8;
-                                Data_Chain     : in out UInt8_Array);
 
 end MBus_Functions;
