@@ -34,7 +34,12 @@ package body Serial_IO.Blocking is
       Control   : Flow_Control := No_Flow_Control)
    is
    begin
-      Serial_IO.Configure (This.Device, Baud_Rate, Parity, Data_Bits, End_Bits, Control);
+      Serial_IO.Configure (This.Device,
+                           Baud_Rate,
+                           Parity,
+                           Data_Bits,
+                           End_Bits,
+                           Control);
    end Configure;
 
    ---------------------
@@ -59,7 +64,9 @@ package body Serial_IO.Blocking is
    -- Set_InterChar_Timeout --
    ---------------------------
 
-   procedure Set_InterChar_Timeout (This : in out Serial_Port; To : Time_Span) is
+   procedure Set_InterChar_Timeout (This : in out Serial_Port;
+                                    To   : Time_Span)
+   is
    begin
       This.InterChar_Timeout := To;
    end Set_InterChar_Timeout;
@@ -68,7 +75,9 @@ package body Serial_IO.Blocking is
    -- Set_InterFrame_Timeout --
    ----------------------------
 
-   procedure Set_InterFrame_Timeout (This : in out Serial_Port; To : Time_Span) is
+   procedure Set_InterFrame_Timeout (This : in out Serial_Port;
+                                     To   : Time_Span)
+   is
    begin
       This.InterFrame_Timeout := To;
    end Set_InterFrame_Timeout;
@@ -78,7 +87,8 @@ package body Serial_IO.Blocking is
    --------------------------
 
    procedure Set_Response_Timeout (This : in out Serial_Port;
-                                   To : Time_Span := Time_Span_Last) is
+                                   To   : Time_Span := Time_Span_Last)
+   is
    begin
       This.Response_Timeout := To;
    end Set_Response_Timeout;
@@ -155,7 +165,9 @@ package body Serial_IO.Blocking is
    -- Send --
    ----------
 
-   procedure Send (This : in out Serial_Port;  Msg : not null access Message) is
+   procedure Send (This : in out Serial_Port;
+                   Msg  : not null access Message)
+   is
    begin
       for Next in 1 .. Msg.Get_Length loop
          Await_Send_Ready (This.Device.Transceiver.all);
@@ -167,7 +179,9 @@ package body Serial_IO.Blocking is
    -- Receive --
    -------------
 
-   procedure Receive (This : in out Serial_Port; Msg : not null access Message) is
+   procedure Receive (This : in out Serial_Port;
+                      Msg  : not null access Message)
+   is
       Raw : UInt9;
       Timed_Out : Boolean;
    begin
@@ -191,7 +205,7 @@ package body Serial_IO.Blocking is
                   Await_Data_Available (This.Device.Transceiver.all,
                                         Timeout   => This.InterFrame_Timeout,
                                         Timed_Out => Timed_Out);
-                  if Timed_Out then
+                  if Timed_Out then --  Reached maximum inter-frame time
                      --  Signalize that inter-frame time is greater then the minimum.
                      Msg.MBus_Note_Error (InterFrame_Timed_Out);
 
@@ -200,7 +214,7 @@ package body Serial_IO.Blocking is
                      Await_Data_Available (This.Device.Transceiver.all,
                                            Timeout   => This.Response_Timeout,
                                            Timed_Out => Timed_Out);
-                     if Timed_Out then
+                     if Timed_Out then --  Reached maximum response time
                         --  Signalize that response time is greater then the maximum.
                         Msg.MBus_Note_Error (Response_Timed_Out);
                      end if;
@@ -213,7 +227,7 @@ package body Serial_IO.Blocking is
                Await_Data_Available (This.Device.Transceiver.all,
                                      Timeout   => This.Response_Timeout,
                                      Timed_Out => Timed_Out);
-               if Timed_Out then
+               if Timed_Out then --  Reached maximum response time
                   --  Signalize that response time is greater then the maximum.
                   Msg.MBus_Note_Error (Response_Timed_Out);
                   exit Receiving;
@@ -222,26 +236,35 @@ package body Serial_IO.Blocking is
                --  Exit Await_Data_Available on Read_Data_Register_Not_Empty.
                Await_Data_Available (This.Device.Transceiver.all,
                                      Timed_Out => Timed_Out);
-         end case;
-
-         Receive (This.Device.Transceiver.all, Raw);
-
-         case This.Serial_Mode is
-            when MBus_RTU =>
-               Msg.Append (UInt8 (Raw));
-            when MBus_ASCII =>
-               Msg.Append (UInt8 (Raw));
-               --  Test end-frame sequence CR + LF for modbus ASCII.
-               if (Msg.Get_Content_At (Msg.Get_Length - 1) = 16#0D# and -- CR character
-                   Msg.Get_Content_At (Msg.Get_Length) = 16#0A#) -- LF character
-               then
-                  exit Receiving;
+               if Timed_Out then -- Reached maximum response time
+                  --  Signalize that response time is greater then the maximum.
+                  Msg.MBus_Note_Error (Response_Timed_Out);
                end if;
-            when Terminal =>
-               --  Character CR is the last saved in the frame.
-               Msg.Append (UInt8 (Raw));
-               exit Receiving when Raw = Character'Pos (Msg.Get_Terminator);
          end case;
+
+         if Rx_Ready (This.Device.Transceiver.all) then
+            Receive (This.Device.Transceiver.all, Raw);
+
+            case This.Serial_Mode is
+               when MBus_RTU =>
+                  Msg.Append (UInt8 (Raw));
+               when MBus_ASCII =>
+                  Msg.Append (UInt8 (Raw));
+                  --  Test end-frame sequence CR + LF for modbus ASCII.
+                  if Msg.Get_Length > 1 then
+                     if Msg.Get_Content_At (Msg.Get_Length) = 16#0A# and -- LF character
+                        Msg.Get_Content_At (Msg.Get_Length - 1) = 16#0D# -- CR character
+                     then
+                        exit Receiving;
+                     end if;
+                  end if;
+               when Terminal =>
+                  --  Character CR is the last saved in the frame.
+                  Msg.Append (UInt8 (Raw));
+                  exit Receiving when UInt8 (Raw) = Character'Pos (Msg.Get_Terminator);
+            end case;
+            Clear_Status (This.Device.Transceiver.all, Read_Data_Register_Not_Empty);
+         end if;
 
       end loop Receiving;
    end Receive;

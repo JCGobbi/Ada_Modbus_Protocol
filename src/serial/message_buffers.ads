@@ -125,14 +125,14 @@ package Message_Buffers is
 private
 
    type Message (Physical_Size : Positive) is tagged limited record
-      Content               : UInt8_Array (1 .. Physical_Size);
-      Length                : Natural := 0;
-      Reception_Complete    : Suspension_Object;
-      Transmission_Complete : Suspension_Object;
-      Terminator            : Character := ASCII.NUL;
-      Error_Status          : Error_Conditions := No_Error_Detected;
-      MBus_Message_Mode     : MBus_Modes := RTU;
-      MBus_Error_Status     : MBus_Error_Conditions := No_Error;
+      Content           : UInt8_Array (1 .. Physical_Size);
+      Length            : Natural := 0;
+      Rx_Complete       : Suspension_Object;
+      Tx_Complete       : Suspension_Object;
+      Terminator        : Character := ASCII.NUL;
+      Error_Status      : Error_Conditions := No_Error_Detected;
+      MBus_Message_Mode : MBus_Modes := RTU;
+      MBus_Error_Status : MBus_Error_Conditions := No_Error;
    end record;
 
 end Message_Buffers;

@@ -90,7 +90,7 @@ package body Message_Buffers is
 
    procedure Await_Transmission_Complete (This : in out Message) is
    begin
-      Suspend_Until_True (This.Transmission_Complete);
+      Suspend_Until_True (This.Tx_Complete);
    end Await_Transmission_Complete;
 
    ------------------------------
@@ -99,7 +99,7 @@ package body Message_Buffers is
 
    procedure Await_Reception_Complete (This : in out Message) is
    begin
-      Suspend_Until_True (This.Reception_Complete);
+      Suspend_Until_True (This.Rx_Complete);
    end Await_Reception_Complete;
 
    ----------------------------------
@@ -108,7 +108,7 @@ package body Message_Buffers is
 
    procedure Signal_Transmission_Complete (This : in out Message) is
    begin
-      Set_True (This.Transmission_Complete);
+      Set_True (This.Tx_Complete);
    end Signal_Transmission_Complete;
 
    -------------------------------
@@ -117,7 +117,7 @@ package body Message_Buffers is
 
    procedure Signal_Reception_Complete (This : in out Message) is
    begin
-      Set_True (This.Reception_Complete);
+      Set_True (This.Rx_Complete);
    end Signal_Reception_Complete;
 
    ----------------

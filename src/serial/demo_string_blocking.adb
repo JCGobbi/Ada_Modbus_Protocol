@@ -18,8 +18,8 @@ with HAL;                  use HAL;
 with STM32.USARTs;         use STM32.USARTs;
 
 with Peripherals_Blocking; use Peripherals_Blocking;
-with Serial_IO.Blocking;   use Serial_IO.Blocking;
-                           use Serial_IO;
+with MBus_Frame.IO;        use MBus_Frame.IO;
+with Serial_IO.Blocking;   use Serial_IO.Blocking, Serial_IO;
 with Message_Buffers;      use Message_Buffers;
 
 procedure Demo_String_Blocking is
@@ -36,69 +36,66 @@ procedure Demo_String_Blocking is
    ------------------------------
 
    procedure Send_String (This : String);
+   --  Receives a string of characters and put the character addresses into an
+   --  UInt8 array. Then put this array into a Message buffer taking into
+   --  account the buffer'flags of transmission/reception complete and send the
+   --  frame to the Term_COM serial port.
 
    procedure Send_String (This : String) is
-      Pos : UInt8;
       CharPos : UInt8_Array (1 .. This'Length);
    begin
       for i in This'Range loop
-         Pos := Character'Pos (This (i));
-         CharPos (i) := Pos;
+         CharPos (i) := Character'Pos (This (i));
       end loop;
 
-      Await_Transmission_Complete (Outgoing); -- outgoing buffer
+      Await_Transmission_Complete (Outgoing);
       Set_Content (Outgoing, To => CharPos);
-      Signal_Reception_Complete (Outgoing); -- outgoing buffer
-      Await_Reception_Complete (Outgoing); -- outgoing buffer
-      Send (Term_COM, Outgoing'Unchecked_Access);
-      --  No need to wait for it here because the Put won't return until the
-      --  message has been sent.
-      Signal_Transmission_Complete (Outgoing); -- outgoing buffer
+      Signal_Reception_Complete (Outgoing);
+      Send_Frame (Term_COM, Outgoing);
    end Send_String;
 
 begin
    --  The three modes of operation MBus_RTU, MBus_ASCII and Terminal for the
    --  serial channel are defined at Serial_IO.ads. This mode only affects the
-   --  reception of data choosing the end of frame mode in the Get procedure at
-   --  Serial_IO.Blocking.
+   --  reception of data choosing the end of frame mode in the Receive procedure
+   --  at Serial_IO.Blocking.
 
    --  Configuration for Terminal console
    Initialize (Term_COM);
-   Configure (Term_COM, Baud_Rate => 115_200);
+   Configure (Term_COM, Baud_Rate => Term_Bps);
    Set_Serial_Mode (Term_COM, Terminal);
+   --  We don't need to configure timeouts for Terminal serial port.
 
-   --  Start with outgoing buffer empty, so there is no need to wait.
-   Signal_Transmission_Complete (Outgoing); -- outgoing buffer
-
-   --  Start with incoming buffer empty, so there is no need to wait.
-   Signal_Transmission_Complete (Incoming); -- incoming buffer
-
-   Send_String ("Enter text, terminated by CR." & ASCII.CR & ASCII.LF);
+   --  Start with buffers empty, so there is no need to wait.
+   Signal_Transmission_Complete (Outgoing);
+   Signal_Transmission_Complete (Incoming);
 
    Set_Terminator (Incoming, To => ASCII.CR);
+
+   Send_String (ASCII.FF & "Enter text, terminated by CR <Enter>."
+                & ASCII.CR & ASCII.LF);
+
    loop
-      Await_Transmission_Complete (Incoming); -- incoming buffer
-      Receive (Term_COM, Incoming'Unchecked_Access);
-      Signal_Reception_Complete (Incoming); -- incoming buffer
+      Receive_Frame (Term_COM, Incoming);
       Send_String ("Received : ");
 
-      Await_Reception_Complete (Incoming); -- incoming buffer
-      if (Get_Content_At (Incoming, 1) = Character'Pos (Incoming.Get_Terminator))  then
+      Await_Reception_Complete (Incoming);
+      if (Get_Content_At (Incoming, 1) = Character'Pos (Incoming.Get_Terminator))
+      then
          Send_String ("no characters." & ASCII.CR & ASCII.LF);
       else
          declare
+            --  The IntPos array has dynamic length, so we need to declare its
+            --  size inside the loop.
             IntPos : UInt8_Array (1 .. Get_Length (Incoming));
-            --  The IntPos array has dynamic length, so we need to declare its size
-            --  inside the loop.
          begin
+            --  Loop back the received characters from the host.
             IntPos := Get_Content (Incoming);
-            Await_Transmission_Complete (Outgoing); -- outgoing buffer
+            Await_Transmission_Complete (Outgoing);
             Set_Content (Outgoing, To => IntPos);
          end;
-         Signal_Reception_Complete (Outgoing); -- outgoing buffer
-         Await_Reception_Complete (Outgoing); -- outgoing buffer
-         Send (Term_COM, Outgoing'Unchecked_Access);
-         Signal_Transmission_Complete (Outgoing); -- outgoing buffer
+         Signal_Reception_Complete (Outgoing);
+         Send_Frame (Term_COM, Outgoing);
          Send_String ("" & ASCII.LF); -- The frame already has CR
       end if;
       Signal_Transmission_Complete (Incoming);

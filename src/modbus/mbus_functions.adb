@@ -14,14 +14,14 @@ package body MBus_Functions is
    is
       Check : UInt16;
    begin
-      Await_Transmission_Complete (Msg); -- outgoing buffer
+      Await_Transmission_Complete (Msg); --  modbus outgoing buffer
       Clear (Msg);
       --  Start writting modbus buffer
       MBus_Set_Address (Msg, Server_Address);
       MBus_Set_Function_Code (Msg, Function_Code);
 
       --  Test if data is not empty
-      if Data_Chain'Length >= 1 then
+      if Data_Chain'Length > 0 then
          for i in 1 .. Data_Chain'Length loop
             MBus_Append_Data (Msg, Data_Chain (i));
          end loop;
@@ -36,6 +36,7 @@ package body MBus_Functions is
             end loop;
          when ASC =>
             Check := 16#0000#;
+            --  The first character is ':'.
             for i in 2 .. Get_Length (Msg) loop
                Check := Check + UInt16 (Get_Content_At (Msg, i));
             end loop;
@@ -46,7 +47,7 @@ package body MBus_Functions is
       --  Set checking in Msg
       MBus_Set_Checking (Msg, Check);
 
-      Signal_Reception_Complete (Msg); -- modbus outgoing buffer
+      Signal_Reception_Complete (Msg); --  modbus outgoing buffer
 
    end Write_Frame;
 
@@ -62,15 +63,15 @@ package body MBus_Functions is
    begin
       Await_Reception_Complete (Msg); -- modbus incoming buffer
 
-      --  Process errors from the modbus incoming buffer frame
-      Process_Error_Status (This => Msg,
+      --  Process errors from the modbus incoming buffer frame.
+      Process_Error_Status (Msg,
                             Server_Address => Server_Address,
                             Function_Code => Function_Code);
 
       if not MBus_Has_Error (Msg, Invalid_Address) xor
          not MBus_Has_Error (Msg, Invalid_Function_Code)
       then
-         --  Test if data is not empty
+         --  Test if message stack is not empty and read its data.
          case MBus_Get_Mode (Msg) is
             when RTU =>
                if Get_Length (Msg) > 4 then
@@ -99,7 +100,7 @@ package body MBus_Functions is
       --  Save errors in the last position of Data
       Data_Chain (Data_Chain'Last) := UInt8 (MBus_Errors_Detected (Msg));
 
-      Signal_Transmission_Complete (Msg); -- incoming buffer
+      Signal_Transmission_Complete (Msg); --  modbus incoming buffer
 
    end Read_Frame;
 
