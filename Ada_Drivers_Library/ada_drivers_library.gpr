@@ -9,6 +9,11 @@ library project Ada_Drivers_Library is
 
    --  Target architecture
    Target := Project'Target;
+   --  for Runtime ("Ada") use Project'Runtime ("Ada");
+
+   --  Run-time system
+   type RTS_Type is ("ravenscar-sfp", "ravenscar-full");
+   RTS : RTS_Type := External ("RTS_Profile", "ravenscar-sfp");
 
    --  Callgraph info is not available on all architectures
    Callgraph_Switch := ();
@@ -52,7 +57,6 @@ library project Ada_Drivers_Library is
          "-fdata-sections");  -- Create a linker section for each data
    end Compiler;
 
-
    for Languages use ("Ada");
    for Create_Missing_Dirs use "True";
    for Object_Dir use "obj_" & Build;
@@ -61,7 +65,6 @@ library project Ada_Drivers_Library is
    for Library_Name use "ada_drivers_library";
 
    Linker_Switches := ();
-   for Runtime ("Ada") use "light-tasking-stm32f429disco";
 
    package Device_Configuration is
       for CPU_Name use "ARM Cortex-M4F";

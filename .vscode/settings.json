@@ -1,9 +1,10 @@
 // Choose between the project files bellow and change variables projectFile,
 // projectFolder and binaryFile according to your actual project file:
 //
-// projectFile                     binaryFile
+// projectFile                binaryFile
 //
-// modbus.gpr                      string_blocking, term_blocking, mbus_blocking
+// modbus_demo.gpr            string_polling, term_polling, mbus_polling
+//                            string_interrupt, term_interrupt, mbus_interrupt
 
 {
     "editor.tabSize": 3,
@@ -12,11 +13,12 @@
     "editor.detectIndentation": false,
     "ada.defaultCharset": "UTF-8",
     
-    "ada.projectFile": "modbus.gpr",
+    "ada.projectFile": "mbus_demo.gpr",
     "ada.scenarioVariables": {
       "projectFolder": "",
-      "binaryFile": "mbus_blocking",
+      "binaryFile": "mbus_polling",
       "STM32ProgFolder": "/opt/STMicroelectronics/STM32CubeProgrammer/bin/"
       // Leave empty if STM32CubeProgrammer is in your PATH
-    }
+   },
+   "cortex-debug.variableUseNaturalFormat": true
 }

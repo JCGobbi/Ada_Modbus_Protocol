@@ -1,0 +1,290 @@
+{
+   // Use IntelliSense to learn about possible attributes.
+   // Hover to view descriptions of existing attributes.
+   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+   "version": "0.2.0",
+   "configurations": [
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (cppdbg/ST-Util) main - src/blocking/demo_string.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/string_polling.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/blocking/demo_string.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/string_polling.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      },
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (ST-Util) main - src/blocking/demo_term.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/term_polling.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/blocking/demo_term.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/term_polling.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      },
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (cppdbg/ST-Util) main - src/blocking/demo_mbus.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/mbus_polling.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/blocking/demo_mbus.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/mbus_polling.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      },
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (cppdbg/ST-Util) main - src/nonblocking/demo_string.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/string_interrupt.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/nonblocking/demo_string.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/string_interrupt.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      },
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (ST-Util) main - src/nonblocking/demo_term.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/term_interrupt.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/nonblocking/demo_term.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/term_interrupt.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      },
+      {
+         "type": "cppdbg",
+         "name": "Ada: Debug (cppdbg/ST-Util) main - src/nonblocking/demo_mbus.adb",
+         "request": "launch",
+         "targetArchitecture": "arm",
+         "cwd": "${workspaceFolder}",
+         "program": "${workspaceFolder}/exec/mbus_interrupt.elf",
+         "stopAtEntry": false,
+         "externalConsole": false,
+         "args": [],
+         "MIMode": "gdb",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "debugServerPath": "st-util",
+         "debugServerArgs": "--connect-under-reset --semihosting",
+         "serverLaunchTimeout": 20000,
+         "serverStarted": "",
+         "miDebuggerPath": "arm-eabi-gdb",
+         "miDebuggerServerAddress": "localhost:4242",
+         "preLaunchTask": "",
+         "setupCommands": [
+            {
+               "description": "Catch all Ada exceptions",
+               "text": "catch exception",
+               "ignoreFailures": true
+            },
+            {
+               "description": "Enable pretty-printing for gdb",
+               "text": "-enable-pretty-printing",
+               "ignoreFailures": true
+            }
+         ]
+      },
+      {
+         "type": "cortex-debug",
+         "name": "Ada: Debug (cortex-debug/ST-Util) main - src/nonblocking/demo_mbus.adb",
+         "request": "launch",
+         "cwd": "${workspaceFolder}",
+         "executable": "${workspaceFolder}/exec/mbus_interrupt.elf",
+         "svdPath": "${workspaceFolder}/STM32F429.svd",
+         "servertype": "stutil",
+         "v1": false,
+         "serverArgs": ["--connect-under-reset --semihosting"],
+         "preLaunchTask": "ada: Build current project",
+         "armToolchainPath": "",
+         "gdbPath": "arm-eabi-gdb",
+         "showDevDebugOutput": "raw"
+      }
+   ]
+}

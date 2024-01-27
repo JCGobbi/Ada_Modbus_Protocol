@@ -1,0 +1,62 @@
+with "Ada_Drivers_Library/ada_drivers_library.gpr";
+with "Modbus/modbus.gpr";
+
+project MBus_Demo extends
+  "Ada_Drivers_Library/repo/examples/shared/common/common.gpr"
+is
+
+   for Languages use ("Ada");
+   for Target use "arm-eabi";
+   for Source_Dirs use ("src", "src/mbus");
+
+   case Modbus.Serial_Mode is
+      when "polling" =>
+         for Source_Dirs use Project'Source_Dirs &
+           ("src/blocking", "src/mbus/blocking");
+      when "interrupt" =>
+         for Source_Dirs use Project'Source_Dirs &
+           ("src/nonblocking", "src/mbus/nonblocking");
+   end case;
+
+   --  Executable files to choose:
+   --  demo_string.adb, demo_term.adb, demo_mbus.adb.
+   for Main use ("demo_string.adb", "demo_term.adb", "demo_mbus.adb");
+   for Object_Dir use "obj";
+   for Exec_Dir use "exec";
+   for Create_Missing_Dirs use "True";
+
+   case Ada_Drivers_Library.RTS is
+      when "ravenscar-sfp" =>
+         for Runtime ("Ada") use "light-tasking-stm32f429disco";
+      when "ravenscar-full" =>
+         for Runtime ("Ada") use "embedded-stm32f429disco";
+   end case;
+
+   package Compiler renames Ada_Drivers_Library.Compiler;
+
+   package Builder is
+      for Global_Configuration_Pragmas use "gnat.adc";
+      for Executable ("demo_string.adb") use "string_" & Modbus.Serial_Mode;
+      for Executable ("demo_term.adb") use "term_" & Modbus.Serial_Mode;
+      for Executable ("demo_mbus.adb") use "mbus_" & Modbus.Serial_Mode;
+      for Executable_Suffix use ".elf";
+   end Builder;
+
+   package Linker is
+      for Default_Switches ("ada") use
+         ("-Wl,--gc-sections",  --  Don't link unused code sections
+          "-Wl,--print-gc-sections",  --  List removed unused code sections
+          "-Wl,--print-memory-usage");
+   end Linker;
+
+   package Ide is
+      for Gnat use "arm-eabi-gnat";
+      for Gnatlist use "arm-eabi-gnatls";
+      for Debugger_Command use "arm-eabi-gdb";
+      for Program_Host use "localhost:4242";
+      for Communication_Protocol use "remote";
+      for Connection_Tool use "st-util";
+   end Ide;
+
+end MBus_Demo;
+
