@@ -16,6 +16,31 @@ package Serial_Timer is
                     Serial_Periph : not null access Port.Serial_Port) is
      limited private;
 
+   procedure Configure_Response_Timeout (This : in out Timer;
+                                         uSec : UInt32);
+   --  Configure response channel timeout in microseconds.
+
+   procedure Configure_Timeout (This   : in out Timer;
+                                MB_Bps : Baud_Rates);
+   --  Initialize timeout timer and configure timeouts for inter-character,
+   --  inter-frame and response.
+
+   procedure Start_Timeout (This : in out Timer;
+                            Mode : Serial_Modes);
+   --  Reset the timer counters, enable interrupts and start the timeout
+   --  counters.
+
+   procedure Stop_Timeout (This    : in out Timer;
+                           Channel : Timer_Channel);
+   --  Disable timeout interrupts.
+
+   function Is_Initialized return Boolean;
+   --  Returns True if the board specifics are initialized.
+
+private
+
+   Initialized : Boolean := False;
+
    Serial_Timer_Clock : constant UInt32 :=
      STM32.Device.System_Clock_Frequencies.TIMCLK1;
 
@@ -52,29 +77,6 @@ package Serial_Timer is
       Channel_3_Period,
       Channel_4_Period);
 
-   function Is_Initialized return Boolean;
-   --  Returns True if the board specifics are initialized.
-
-   procedure Configure_Response_Timeout (This : in out Timer;
-                                         uSec : UInt32);
-   --  Configure response channel timeout in microseconds.
-
-   procedure Configure_Timeout (This   : in out Timer;
-                                MB_Bps : Baud_Rates);
-   --  Initialize timeout timer and configure timeouts for inter-character,
-   --  inter-frame and response.
-
-   procedure Start_Timeout (This : in out Timer;
-                            Mode : Serial_Modes);
-   --  Reset the timer counters, enable interrupts and start the timeout
-   --  counters.
-
-   procedure Stop_Timeout (This    : in out Timer;
-                           Channel : Timer_Channel);
-   --  Disable timeout interrupts.
-
-private
-
    function Inter_Time (Bps        : Baud_Rates;
                         Inter_Char : UInt32) return UInt32;
    --  Inter_Char is the number of characters in x10 parts.
@@ -84,8 +86,6 @@ private
    procedure Initialize_Timer (This : in out Timer);
    --  Enable timer clock, configure prescaler and counter mode and the counter
    --  for each timer channel.
-
-   Initialized : Boolean := False;
 
    protected type Timer_Port (Device        : not null access Timer;
                               IRQ           : Interrupt_ID;

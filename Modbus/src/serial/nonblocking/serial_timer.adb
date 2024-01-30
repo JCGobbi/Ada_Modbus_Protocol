@@ -68,7 +68,6 @@ package body Serial_Timer is
    procedure Initialize_Timer (This : in out Timer)
    is
    begin
-      --  Initialize the general timer
       STM32.Device.Enable_Clock (This);
       STM32.Device.Reset (This);
 
