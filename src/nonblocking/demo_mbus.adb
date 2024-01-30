@@ -80,7 +80,7 @@ begin
    Initialize (Term_COM);
    Configure (Term_COM, Baud_Rate => Term_Bps, Parity => No_Parity);
    Set_Serial_Mode (Term_COM, Terminal);
-   --  We don't need really configure timeout for terminal, it is optional
+   --  We don't need to configure timeout for terminal, it is optional.
    --  Serial_Timer.Configure_Timeout (Term_TIM.Device.all, MB_Bps => Term_Bps);
    --  Serial_Timer.Configure_Response_Timeout (Term_TIM.Device.all, uSec => 10_000_000);
 
